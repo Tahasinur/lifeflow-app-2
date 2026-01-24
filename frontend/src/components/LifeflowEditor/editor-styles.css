@@ -1,0 +1,321 @@
+.lifeflow-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.dark .lifeflow-editor {
+  background: #191919;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+  flex-wrap: wrap;
+}
+
+.dark .editor-toolbar {
+  border-bottom-color: #2f2f2f;
+  background: #252525;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+.dark .toolbar-divider {
+  background: #3f3f3f;
+}
+
+.toolbar-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #37352f;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark .toolbar-btn {
+  color: #e3e3e3;
+}
+
+.toolbar-btn:hover {
+  background: #e5e7eb;
+}
+
+.dark .toolbar-btn:hover {
+  background: #2f2f2f;
+}
+
+.toolbar-btn.active {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.dark .toolbar-btn.active {
+  background: #1e3a5f;
+  color: #60a5fa;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.editor-content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 48px;
+}
+
+.lifeflow-editor-content {
+  min-height: 100%;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.75;
+  color: #37352f;
+}
+
+.dark .lifeflow-editor-content {
+  color: #e3e3e3;
+}
+
+.lifeflow-editor-content > * + * {
+  margin-top: 0.75em;
+}
+
+.lifeflow-editor-content h1 {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.lifeflow-editor-content h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+}
+
+.lifeflow-editor-content h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.lifeflow-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+.lifeflow-editor-content ul,
+.lifeflow-editor-content ol {
+  padding-left: 1.5em;
+}
+
+.lifeflow-editor-content ul {
+  list-style-type: disc;
+}
+
+.lifeflow-editor-content ol {
+  list-style-type: decimal;
+}
+
+.lifeflow-editor-content li {
+  margin: 0.25em 0;
+}
+
+.lifeflow-editor-content ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.lifeflow-editor-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.lifeflow-editor-content ul[data-type="taskList"] li label {
+  display: flex;
+  align-items: center;
+}
+
+.lifeflow-editor-content ul[data-type="taskList"] li input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin: 4px 0 0 0;
+}
+
+.lifeflow-editor-content ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+.lifeflow-editor-content blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.dark .lifeflow-editor-content blockquote {
+  border-left-color: #3f3f3f;
+  color: #9ca3af;
+}
+
+.lifeflow-editor-content hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 2em 0;
+}
+
+.dark .lifeflow-editor-content hr {
+  border-top-color: #3f3f3f;
+}
+
+.lifeflow-editor-content code {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.9em;
+}
+
+.dark .lifeflow-editor-content code {
+  background: #2f2f2f;
+}
+
+.lifeflow-editor-content pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.lifeflow-editor-content pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.editor-link {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dark .editor-link {
+  color: #60a5fa;
+}
+
+.editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1em 0;
+}
+
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.editor-table th,
+.editor-table td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.dark .editor-table th,
+.dark .editor-table td {
+  border-color: #3f3f3f;
+}
+
+.editor-table th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.dark .editor-table th {
+  background: #252525;
+}
+
+.editor-table td {
+  background: white;
+}
+
+.dark .editor-table td {
+  background: #191919;
+}
+
+.lifeflow-editor-content mark {
+  background: #fef3c7;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.dark .lifeflow-editor-content mark {
+  background: #78350f;
+}
+
+.editor-footer {
+  padding: 8px 12px;
+  border-top: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.dark .editor-footer {
+  border-top-color: #2f2f2f;
+  background: #252525;
+}
+
+.ProseMirror-selectednode {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.selectedCell {
+  background: #dbeafe;
+}
+
+.dark .selectedCell {
+  background: #1e3a5f;
+}
