@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Page } from '../types';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import { Input } from './ui/input';
+import { NotificationBadge } from './NotificationBadge';
 import { getUserFirstName } from '../hooks/useDashboard';
 
 interface TabItem {
@@ -43,11 +44,39 @@ export function Topbar({
   const [showSmallText, setShowSmallText] = useState(false);
   const [isFullWidth, setIsFullWidth] = useState(false);
   const [firstName, setFirstName] = useState<string>('User');
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Load user's first name on mount
   useEffect(() => {
     const name = getUserFirstName();
     setFirstName(name);
+
+    // Get current user ID
+    const token = localStorage.getItem('lifeflow-token');
+    if (token) {
+      // Extract user ID from token or fetch it
+      try {
+        const authResponse = fetch('/api/auth/validate', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }).then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+        });
+
+        authResponse.then((data) => {
+          if (data?.userId) {
+            setUserId(data.userId);
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    }
   }, []);
 
   const handleCopyLink = async () => {
@@ -183,6 +212,10 @@ export function Topbar({
             >
               <Star className={`w-4 h-4 ${currentPage.isFavorite ? 'fill-yellow-400' : ''}`} />
             </button>
+          )}
+
+          {userId && (
+            <NotificationBadge userId={userId} />
           )}
           
           <Popover open={sharePopoverOpen} onOpenChange={setSharePopoverOpen}>

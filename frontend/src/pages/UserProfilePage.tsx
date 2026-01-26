@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Copy, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { FeedItem } from '../types';
+import { FollowButton } from '../components/FollowButton';
+import { followService } from '../services/followService';
+import { webSocketNotificationService } from '../services/webSocketNotificationService';
 
 interface UserProfile {
   id: string;
@@ -18,10 +21,14 @@ export function UserProfilePage() {
   const [templates, setTemplates] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
       loadUserProfile();
+      getCurrentUser();
     }
   }, [userId]);
 
@@ -33,6 +40,12 @@ export function UserProfilePage() {
       if (userRes.ok) {
         const userData = await userRes.json();
         setUser(userData);
+
+        // Load follower and following counts
+        const followerCount = await followService.getFollowerCount(userId);
+        const followingCount = await followService.getFollowingCount(userId);
+        setFollowerCount(followerCount);
+        setFollowingCount(followingCount);
       } else {
         toast.error('User not found');
         navigate(-1);
@@ -50,6 +63,34 @@ export function UserProfilePage() {
       toast.error('Failed to load profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem('lifeflow-token');
+      if (token) {
+        const authResponse = await fetch('/api/auth/validate', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          setCurrentUserId(authData.userId);
+
+          // Initialize WebSocket connection
+          try {
+            await webSocketNotificationService.connect(authData.userId);
+          } catch (error) {
+            console.error('Error connecting to WebSocket:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error getting current user:', error);
     }
   };
 
@@ -118,6 +159,22 @@ export function UserProfilePage() {
               </p>
             )}
 
+            {/* Follower and Following Stats */}
+            <div className="flex gap-6 mb-4">
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                  {followerCount}
+                </span>
+                <span className="text-xs text-[#9B9A97]">Followers</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                  {followingCount}
+                </span>
+                <span className="text-xs text-[#9B9A97]">Following</span>
+              </div>
+            </div>
+
             {/* Template Count */}
             <div className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3]">
               <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -129,8 +186,8 @@ export function UserProfilePage() {
             </div>
           </div>
 
-          {/* Message Button */}
-          <div className="flex-shrink-0">
+          {/* Message and Follow Buttons */}
+          <div className="flex-shrink-0 flex gap-2">
             <button
               onClick={handleMessageUser}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
@@ -138,6 +195,22 @@ export function UserProfilePage() {
               <MessageCircle size={16} />
               Message
             </button>
+            {currentUserId && user && (
+              <FollowButton
+                currentUserId={currentUserId}
+                targetUserId={user.id}
+                targetUserName={user.name}
+                targetUserAvatar={user.avatar}
+                onFollowChange={(isFollowing) => {
+                  // Update follower count when follow status changes
+                  if (isFollowing) {
+                    setFollowerCount((prev) => prev + 1);
+                  } else {
+                    setFollowerCount((prev) => Math.max(0, prev - 1));
+                  }
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
