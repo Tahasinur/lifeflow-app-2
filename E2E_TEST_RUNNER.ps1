@@ -19,22 +19,22 @@ function Write-TestHeader {
 
 function Write-Pass {
     param([string]$Text)
-    Write-Host "✅ PASS: $Text" -ForegroundColor Green
+    Write-Host "[PASS] $Text" -ForegroundColor Green
 }
 
 function Write-Fail {
     param([string]$Text)
-    Write-Host "❌ FAIL: $Text" -ForegroundColor Red
+    Write-Host "[FAIL] $Text" -ForegroundColor Red
 }
 
 function Write-Info {
     param([string]$Text)
-    Write-Host "ℹ️  INFO: $Text" -ForegroundColor Blue
+    Write-Host "[INFO] $Text" -ForegroundColor Blue
 }
 
 function Write-Warning {
     param([string]$Text)
-    Write-Host "⚠️  WARN: $Text" -ForegroundColor Yellow
+    Write-Host "[WARN] $Text" -ForegroundColor Yellow
 }
 
 # Test logging
@@ -46,7 +46,7 @@ function Log-Test {
         [string]$Timestamp = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
     )
     
-    $logEntry = "[$Timestamp] $Status | $TestName | $Details"
+    $logEntry = "[$Timestamp] $Status `| $TestName `| $Details"
     Add-Content -Path $LogFile -Value $logEntry
     Write-Verbose $logEntry
 }
@@ -209,14 +209,17 @@ $testResults.TotalTests++
 # Test 2.2: Alice Creates a Workspace Page
 Write-Host "`n[TEST 2.2] Create Workspace Page" -ForegroundColor Yellow
 
+$blocksJsonString = '[{"type":"heading","content":"Chapter 1: Introduction"},{"type":"paragraph","content":"This is a study guide for advanced Python."}]'
+$editorJsonString = '{"version":1,"blocks":[]}'
+
 $pageBody = @{
     id = "page-alice-study-guide"
     title = "Alice's Study Guide"
-    icon = "📚"
+    icon = "book"
     userId = $ALICE_ID
     coverImage = ""
-    blocksJson = '[{"type":"heading","content":"Chapter 1: Introduction"},{"type":"paragraph","content":"This is a study guide for advanced Python."}]'
-    editorContentJson = '{"version":1,"blocks":[]}'
+    blocksJson = $blocksJsonString
+    editorContentJson = $editorJsonString
     parentId = $null
     favorite = $false
     deleted = $false
