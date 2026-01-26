@@ -48,6 +48,7 @@ export function DashboardLayout() {
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={toggleSidebar}
           currentPage={currentPage}
+          currentPageId={currentPageId || undefined}
           onToggleFavorite={
             currentPage
               ? () => handleUpdatePage({ ...currentPage, isFavorite: !currentPage.isFavorite })

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, User, Settings, Users, Upload, Moon, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { useTheme } from '../hooks/useTheme';
 
 interface SettingsModalProps {

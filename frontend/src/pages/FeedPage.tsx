@@ -1,430 +1,553 @@
-import { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Copy, Plus, Send, X, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FeedItem, Comment, FeedUser } from '../types';
-import { ShareModal } from '../components/ShareModal';
+import { Heart, MessageCircle, Download, Star, Users, Share2, Search } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface Template {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: string;
+  author: string;
+  uses: number;
+  rating: number;
+  image?: string;
+}
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  authorAvatar: string;
+  category: string;
+  date: string;
+  readTime: number;
+  likes: number;
+  comments: number;
+  tags: string[];
+  featured?: boolean;
+}
+
+const DEMO_TEMPLATES: Template[] = [
+  {
+    id: '1',
+    title: 'Project Management System',
+    description: 'A comprehensive template for managing projects, tasks, and team collaboration.',
+    icon: '📋',
+    category: 'Business',
+    author: 'Lifeflow Team',
+    uses: 1234,
+    rating: 4.8,
+    image: '📋'
+  },
+  {
+    id: '2',
+    title: 'Personal Budget Tracker',
+    description: 'Track your income, expenses, and savings with detailed analytics and reports.',
+    icon: '💰',
+    category: 'Finance',
+    author: 'Finance Expert',
+    uses: 892,
+    rating: 4.7,
+    image: '💰'
+  },
+  {
+    id: '3',
+    title: 'Content Calendar',
+    description: 'Plan and organize your content creation schedule across multiple platforms.',
+    icon: '📅',
+    category: 'Content',
+    author: 'Creator Pro',
+    uses: 654,
+    rating: 4.9,
+    image: '📅'
+  },
+  {
+    id: '4',
+    title: 'Learning Progress Tracker',
+    description: 'Monitor your learning journey with courses, notes, and progress tracking.',
+    icon: '📚',
+    category: 'Education',
+    author: 'Learning Guru',
+    uses: 2103,
+    rating: 4.6,
+    image: '📚'
+  },
+  {
+    id: '5',
+    title: 'Event Planning Template',
+    description: 'Organize events with guest lists, budgets, timelines, and checklists.',
+    icon: '🎉',
+    category: 'Events',
+    author: 'Event Manager',
+    uses: 543,
+    rating: 4.8,
+    image: '🎉'
+  },
+  {
+    id: '6',
+    title: 'Product Launch Checklist',
+    description: 'Complete checklist for launching products with marketing, sales, and support tasks.',
+    icon: '🚀',
+    category: 'Product',
+    author: 'Product Team',
+    uses: 1876,
+    rating: 4.9,
+    image: '🚀'
+  }
+];
+
+const DEMO_BLOGS: BlogPost[] = [
+  {
+    id: '1',
+    title: 'Getting Started with Lifeflow: A Beginner\'s Guide',
+    excerpt: 'Learn the basics of Lifeflow and how to organize your workspace for maximum productivity.',
+    content: 'Lifeflow is a powerful workspace management tool...',
+    author: 'Sarah Johnson',
+    authorAvatar: 'SJ',
+    category: 'Guide',
+    date: '2024-01-20',
+    readTime: 5,
+    likes: 342,
+    comments: 28,
+    tags: ['lifeflow', 'getting-started', 'productivity'],
+    featured: true
+  },
+  {
+    id: '2',
+    title: 'Advanced Tips for Project Management',
+    excerpt: 'Master advanced techniques to manage complex projects efficiently with Lifeflow.',
+    content: 'When managing multiple projects, organization is key...',
+    author: 'Michael Chen',
+    authorAvatar: 'MC',
+    category: 'Tips',
+    date: '2024-01-18',
+    readTime: 8,
+    likes: 287,
+    comments: 15,
+    tags: ['project-management', 'tips', 'advanced'],
+    featured: true
+  },
+  {
+    id: '3',
+    title: 'Collaboration Best Practices for Teams',
+    excerpt: 'Discover how teams can collaborate effectively using Lifeflow\'s built-in features.',
+    content: 'Team collaboration is more important than ever...',
+    author: 'Emma Wilson',
+    authorAvatar: 'EW',
+    category: 'Best Practices',
+    date: '2024-01-15',
+    readTime: 6,
+    likes: 456,
+    comments: 42,
+    tags: ['collaboration', 'teams', 'best-practices']
+  },
+  {
+    id: '4',
+    title: 'Automation Workflows: Save Time Every Day',
+    excerpt: 'Learn how to automate repetitive tasks and focus on what matters most.',
+    content: 'Automation is one of the most powerful features...',
+    author: 'David Martinez',
+    authorAvatar: 'DM',
+    category: 'Guide',
+    date: '2024-01-12',
+    readTime: 7,
+    likes: 523,
+    comments: 56,
+    tags: ['automation', 'workflows', 'productivity']
+  },
+  {
+    id: '5',
+    title: 'Security and Privacy: Keeping Your Data Safe',
+    excerpt: 'Understanding Lifeflow\'s security features to protect your sensitive information.',
+    content: 'Data security is our top priority...',
+    author: 'Lisa Anderson',
+    authorAvatar: 'LA',
+    category: 'Security',
+    date: '2024-01-10',
+    readTime: 5,
+    likes: 234,
+    comments: 19,
+    tags: ['security', 'privacy', 'data-protection']
+  },
+  {
+    id: '6',
+    title: 'Real Success Stories from Our Community',
+    excerpt: 'See how real users are transforming their workflows with Lifeflow.',
+    content: 'Our community is doing amazing things...',
+    author: 'James Rodriguez',
+    authorAvatar: 'JR',
+    category: 'Community',
+    date: '2024-01-08',
+    readTime: 9,
+    likes: 678,
+    comments: 73,
+    tags: ['community', 'success-stories', 'testimonials']
+  }
+];
 
 export function FeedPage() {
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [filter, setFilter] = useState('all');
-  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
-  const [commentingOn, setCommentingOn] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState<FeedUser | null>(null);
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'templates' | 'blogs'>('templates');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadFeed();
-    loadCurrentUser();
-  }, []);
+  // Template Showcase Content
+  const templateCategories = ['All', 'Business', 'Finance', 'Content', 'Education', 'Events', 'Product'];
+  const filteredTemplates = selectedCategory === 'All' 
+    ? DEMO_TEMPLATES 
+    : DEMO_TEMPLATES.filter(t => t.category === selectedCategory);
 
-  const loadCurrentUser = () => {
-    const storedUser = localStorage.getItem('lifeflow-user');
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setCurrentUser(parsed);
-    }
+  const handleUseTemplate = (template: Template) => {
+    toast.success(`Template "${template.title}" added to your workspace!`);
   };
 
-  const loadFeed = async () => {
-    try {
-      const res = await fetch(`/api/feed?t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        const sortedData = data.sort((a: FeedItem, b: FeedItem) => 
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setFeedItems(sortedData);
-      }
-    } catch (err) {
-      console.error("Failed to load feed:", err);
-      toast.error("Could not load feed");
-    }
-  };
-
-  const filteredFeed = feedItems.filter((item) => {
-    if (filter === 'all') return true;
-    return item.type === filter;
+  // Blog Showcase Content
+  const blogCategories = ['All', 'Guide', 'Tips', 'Best Practices', 'Security', 'Community'];
+  const [selectedBlogCategory, setSelectedBlogCategory] = useState('All');
+  
+  const filteredBlogPosts = DEMO_BLOGS.filter(post => {
+    const matchesCategory = selectedBlogCategory === 'All' || post.category === selectedBlogCategory;
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          post.tags.some(tag => tag.includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesSearch;
   });
 
-  const toggleLike = async (itemId: string) => {
-    setLikedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) newSet.delete(itemId);
-      else newSet.add(itemId);
-      return newSet;
-    });
-    try {
-        await fetch(`/api/feed/${itemId}/like`, { method: 'POST' });
-        loadFeed();
-    } catch (e) { console.error(e); }
-  };
+  const featuredPosts = DEMO_BLOGS.filter(p => p.featured);
 
-  const openComments = async (itemId: string) => {
-    setCommentingOn(itemId);
-    setLoadingComments(true);
-    try {
-      const res = await fetch(`/api/feed/${itemId}/comments`);
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data);
-      }
-    } catch (err) {
-      console.error("Failed to load comments:", err);
-    } finally {
-      setLoadingComments(false);
-    }
-  };
-
-  const submitComment = async () => {
-    if (!commentingOn || !commentText.trim()) return;
-    
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (currentUser?.id) {
-      headers['X-User-Id'] = currentUser.id;
-    }
-
-    try {
-      const res = await fetch(`/api/feed/${commentingOn}/comments`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          text: commentText,
-          authorName: currentUser?.name || "Anonymous",
-          authorEmail: currentUser?.email || "anonymous@example.com",
-          userId: currentUser?.id
-        })
-      });
-      if (res.ok) {
-        setCommentText('');
-        openComments(commentingOn);
-        loadFeed();
-        toast.success("Comment added!");
-      }
-    } catch (err) {
-      toast.error("Failed to add comment");
-    }
-  };
-
-  const deletePost = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
-    
-    const headers: Record<string, string> = {};
-    if (currentUser?.id) {
-      headers['X-User-Id'] = currentUser.id;
-    }
-
-    try {
-      const res = await fetch(`/api/feed/${itemId}`, {
-        method: 'DELETE',
-        headers
-      });
-      if (res.ok) {
-        toast.success("Post deleted!");
-        loadFeed();
-      } else {
-        const error = await res.json();
-        toast.error(error.error || "Failed to delete post");
-      }
-    } catch (err) {
-      toast.error("Failed to delete post");
-    }
-  };
-
-  const deleteComment = async (commentId: string) => {
-    if (!commentingOn) return;
-    
-    const headers: Record<string, string> = {};
-    if (currentUser?.id) {
-      headers['X-User-Id'] = currentUser.id;
-    }
-
-    try {
-      const res = await fetch(`/api/feed/${commentingOn}/comments/${commentId}`, {
-        method: 'DELETE',
-        headers
-      });
-      if (res.ok) {
-        toast.success("Comment deleted!");
-        openComments(commentingOn);
-        loadFeed();
-      } else {
-        const error = await res.json();
-        toast.error(error.error || "Failed to delete comment");
-      }
-    } catch (err) {
-      toast.error("Failed to delete comment");
-    }
-  };
-
-  const cloneTemplate = async (item: FeedItem) => {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (currentUser?.id) {
-      headers['X-User-Id'] = currentUser.id;
-    }
-
-    try {
-      const res = await fetch(`/api/feed/${item.id}/clone`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ userId: currentUser?.id })
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        toast.success(data.message || "Template cloned!");
-        navigate(`/page/${data.pageId}`);
-      } else {
-        const error = await res.json();
-        toast.error(error.error || "Failed to clone template");
-      }
-    } catch (err) {
-      toast.error("Failed to clone template");
-    }
-  };
-
-  const getActionText = (type: FeedItem['type']) => {
-    switch (type) {
-      case 'template': return 'shared a template';
-      case 'blog': return 'wrote a blog';
-      case 'workspace_update': return 'shared a workspace update';
-    }
-  };
-
-  const getAuthorAvatar = (item: FeedItem) => {
-    if (item.author?.avatar) return item.author.avatar;
-    if (item.author?.name) return item.author.name.substring(0, 2).toUpperCase();
-    return "??";
-  };
-
-  const getAuthorName = (item: FeedItem) => {
-    return item.author?.name || "Anonymous";
-  };
-
-  const isOwnPost = (item: FeedItem) => {
-    return currentUser?.id && item.author?.id === currentUser.id;
-  };
-
-  const isOwnComment = (comment: Comment) => {
-    return currentUser?.id && comment.author?.id === currentUser.id;
-  };
-
-  const navigateToProfile = (authorId: string) => {
-    navigate(`/profile/${authorId}`);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#191919]">
-      <div className="border-b border-gray-200 dark:border-[#2F2F2F] bg-white dark:bg-[#191919] px-6 py-6">
-        <div className="flex justify-between items-start">
-            <div>
-                <h1 className="text-3xl font-semibold text-[#37352F] dark:text-[#FFFFFF]">Discover</h1>
-                <p className="text-sm mt-2 text-[#9B9A97]">See what others are building</p>
-            </div>
-            <button 
-                onClick={() => setShowShareModal(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-            >
-                <Plus size={16} />
-                Share to Feed
-            </button>
+    <div className="flex-1 overflow-auto bg-white dark:bg-[#191919] flex flex-col">
+      {/* Header with Tabs */}
+      <div className="sticky top-0 z-10 bg-white dark:bg-[#191919] border-b border-gray-200 dark:border-[#2F2F2F]">
+        <div className="px-8 py-6">
+          <h1 className="text-3xl font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2">
+            Discover
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Explore templates and insights from the Lifeflow community
+          </p>
         </div>
 
-        <div className="flex gap-2 mt-6">
-          {['all', 'template', 'blog'].map((f) => (
-             <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-2 text-sm rounded-full transition-colors capitalize ${
-                  filter === f
-                    ? 'bg-black dark:bg-[#E3E3E3] text-white dark:text-[#191919]'
-                    : 'bg-gray-100 dark:bg-[#2F2F2F] hover:bg-gray-200 dark:hover:bg-[#3F3F3F] text-[#37352F] dark:text-[#E3E3E3]'
-                }`}
-              >
-                {f}
-              </button>
-          ))}
+        {/* Tab Navigation */}
+        <div className="px-8 border-t border-gray-200 dark:border-[#2F2F2F]">
+          <div className="flex gap-8">
+            <button
+              onClick={() => {
+                setActiveTab('templates');
+                setSelectedCategory('All');
+                setSearchQuery('');
+              }}
+              className={`px-2 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'templates'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-[#37352F] dark:hover:text-[#E3E3E3]'
+              }`}
+            >
+              📋 Templates
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('blogs');
+                setSelectedBlogCategory('All');
+                setSearchQuery('');
+              }}
+              className={`px-2 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'blogs'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-[#37352F] dark:hover:text-[#E3E3E3]'
+              }`}
+            >
+              📝 Blogs
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-white dark:bg-[#191919]">
-        <div className="max-w-3xl mx-auto px-6 py-8">
-            {filteredFeed.length === 0 && (
-                <div className="text-center text-gray-500 mt-10">
-                    No posts yet. Click "Share to Feed" to start!
+      {/* Content Area */}
+      <div className="flex-1 overflow-auto">
+        {/* Templates Tab */}
+        {activeTab === 'templates' && (
+          <div className="p-8">
+            {/* Category Filter */}
+            <div className="mb-8">
+              <h2 className="text-sm font-semibold text-[#37352F] dark:text-[#E3E3E3] mb-3">
+                CATEGORIES
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {templateCategories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                      selectedCategory === category
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-[#2F2F2F] text-[#37352F] dark:text-[#E3E3E3] hover:bg-gray-200 dark:hover:bg-[#3F3F3F]'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Templates Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTemplates.map(template => (
+                <div
+                  key={template.id}
+                  className="bg-white dark:bg-[#202020] border border-gray-200 dark:border-[#2F2F2F] rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  {/* Template Preview */}
+                  <div className="aspect-video bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-[#2F2F2F] dark:to-[#3F3F3F] flex items-center justify-center border-b border-gray-200 dark:border-[#2F2F2F]">
+                    <span className="text-6xl">{template.icon}</span>
+                  </div>
+
+                  {/* Template Info */}
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-[#37352F] dark:text-[#E3E3E3] mb-2">
+                      {template.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                      {template.description}
+                    </p>
+
+                    {/* Meta Info */}
+                    <div className="flex items-center gap-4 mb-4 text-xs text-gray-500 dark:text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        <span>{template.uses.toLocaleString()} uses</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span>{template.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+
+                    {/* Author */}
+                    <div className="mb-4 pb-4 border-b border-gray-200 dark:border-[#2F2F2F]">
+                      <p className="text-xs text-gray-500 dark:text-gray-500">
+                        by{' '}
+                        <button
+                          onClick={() => navigate(`/user/${template.author}`)}
+                          className="text-[#37352F] dark:text-[#E3E3E3] hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer font-medium"
+                        >
+                          {template.author}
+                        </button>
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleUseTemplate(template)}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Use Template</span>
+                      </button>
+                      <button
+                        onClick={() => toast.info('Preview feature coming soon')}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 dark:border-[#3F3F3F] text-[#37352F] dark:text-[#E3E3E3] text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-[#2F2F2F] transition-colors"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        <span>Preview</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Blogs Tab */}
+        {activeTab === 'blogs' && (
+          <div className="p-8">
+            {/* Featured Posts */}
+            {featuredPosts.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold text-[#37352F] dark:text-[#E3E3E3] mb-6">
+                  Featured Articles
+                </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {featuredPosts.map(post => (
+                    <article
+                      key={post.id}
+                      className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-[#2F2F2F] dark:to-[#202020] border border-blue-200 dark:border-[#3F3F3F] rounded-lg overflow-hidden hover:shadow-lg transition-shadow p-6"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="px-2 py-1 bg-blue-200 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded">
+                          Featured
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-500">
+                          {formatDate(post.date)}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">
+                            {post.authorAvatar}
+                          </div>
+                          <div>
+                            <button
+                              onClick={() => navigate(`/user/${post.author}`)}
+                              className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3] hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            >
+                              {post.author}
+                            </button>
+                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                              {post.readTime} min read
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <button className="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                          <Heart className="w-4 h-4" />
+                          <span>{post.likes}</span>
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>{post.comments}</span>
+                        </button>
+                        <button
+                          onClick={() => toast.info('Read full article')}
+                          className="ml-auto flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          <span>Read</span>
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
             )}
 
-          <div className="space-y-6">
-            {filteredFeed.map((item) => (
-              <div key={item.id} className="bg-white dark:bg-[#202020] border border-gray-200 dark:border-[#2F2F2F] rounded-lg p-6 hover:border-gray-300 dark:hover:border-[#3F3F3F] transition-colors">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => item.author?.id && navigateToProfile(item.author.id)}
-                        className="w-10 h-10 rounded-full flex items-center justify-center bg-[#37352F] dark:bg-[#E3E3E3] text-white dark:text-[#191919] font-medium text-sm hover:ring-2 hover:ring-blue-500 transition-all"
-                      >
-                        {getAuthorAvatar(item)}
-                      </button>
-                      <div>
-                        <div className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3]">
-                          <button 
-                            onClick={() => item.author?.id && navigateToProfile(item.author.id)}
-                            className="hover:underline hover:text-blue-600"
-                          >
-                            {getAuthorName(item)}
-                          </button>
-                          <span className="font-normal ml-1 text-[#9B9A97]">{getActionText(item.type)}</span>
-                        </div>
-                        <div className="text-xs text-[#9B9A97]">{new Date(item.createdAt).toLocaleDateString()}</div>
-                      </div>
-                    </div>
-                    {isOwnPost(item) && (
-                      <button
-                        onClick={() => deletePost(item.id)}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        title="Delete post"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="mb-4">
-                    <h2 className="text-xl font-semibold mb-2 text-[#37352F] dark:text-[#FFFFFF]">{item.title}</h2>
-                    <p className="text-sm leading-relaxed text-[#37352F] dark:text-[#E3E3E3]">{item.description}</p>
-                  </div>
-
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="flex gap-2 mb-4 flex-wrap">
-                      {item.tags.map((tag, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-gray-100 dark:bg-[#2F2F2F] text-xs rounded-full text-[#37352F] dark:text-[#E3E3E3]">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-[#2F2F2F]">
-                    <button 
-                      onClick={() => toggleLike(item.id)} 
-                      className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-[#2F2F2F] transition-colors ${likedItems.has(item.id) ? 'text-red-500' : 'text-[#37352F] dark:text-[#E3E3E3]'}`}
-                    >
-                      <Heart size={16} fill={likedItems.has(item.id) ? 'currentColor' : 'none'} />
-                      <span>{item.likes}</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => openComments(item.id)} 
-                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-[#2F2F2F] transition-colors text-[#37352F] dark:text-[#E3E3E3]"
-                    >
-                      <MessageCircle size={16} />
-                      <span>{item.commentCount || 0}</span>
-                    </button>
-
-                    {item.type === 'template' && item.sourcePageId && (
-                      <button 
-                        onClick={() => cloneTemplate(item)} 
-                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-blue-600 dark:text-blue-400 ml-auto"
-                      >
-                        <Copy size={16} />
-                        <span>Clone to My Workspace</span>
-                      </button>
-                    )}
-                  </div>
+            {/* Search and Filter */}
+            <div className="mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search articles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-[#3F3F3F] rounded-lg bg-white dark:bg-[#202020] text-[#37352F] dark:text-[#E3E3E3] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {commentingOn && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-[#202020] rounded-lg w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-[#2F2F2F]">
-              <h3 className="font-semibold text-[#37352F] dark:text-[#FFFFFF]">Comments</h3>
-              <button 
-                onClick={() => { setCommentingOn(null); setComments([]); }}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-[#2F2F2F] rounded"
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
+              {/* Category Filter */}
+              <div className="flex flex-wrap gap-2">
+                {blogCategories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedBlogCategory(category)}
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                      selectedBlogCategory === category
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-[#2F2F2F] text-[#37352F] dark:text-[#E3E3E3] hover:bg-gray-200 dark:hover:bg-[#3F3F3F]'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            <div className="flex-1 overflow-auto p-4 space-y-4">
-              {loadingComments ? (
-                <div className="text-center text-gray-500">Loading...</div>
-              ) : comments.length === 0 ? (
-                <div className="text-center text-gray-500">No comments yet. Be the first!</div>
-              ) : (
-                comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3 group">
-                    <button
-                      onClick={() => comment.author?.id && navigateToProfile(comment.author.id)}
-                      className="w-8 h-8 rounded-full flex items-center justify-center bg-[#37352F] dark:bg-[#E3E3E3] text-white dark:text-[#191919] font-medium text-xs flex-shrink-0 hover:ring-2 hover:ring-blue-500 transition-all"
-                    >
-                      {comment.author?.avatar || comment.author?.name?.substring(0, 2).toUpperCase() || "??"}
-                    </button>
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-2">
+
+            {/* All Posts */}
+            <h2 className="text-2xl font-bold text-[#37352F] dark:text-[#E3E3E3] mb-6">
+              {selectedBlogCategory === 'All' ? 'All Articles' : selectedBlogCategory}
+            </h2>
+            <div className="space-y-4">
+              {filteredBlogPosts.length > 0 ? (
+                filteredBlogPosts.map(post => (
+                  <article
+                    key={post.id}
+                    className="bg-white dark:bg-[#202020] border border-gray-200 dark:border-[#2F2F2F] rounded-lg p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                            {post.category}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-500">
+                            {formatDate(post.date)}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                          {post.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                          {post.excerpt}
+                        </p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">
+                            {post.authorAvatar}
+                          </div>
                         <button
-                          onClick={() => comment.author?.id && navigateToProfile(comment.author.id)}
-                          className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3] hover:underline hover:text-blue-600"
+                          onClick={() => navigate(`/user/${post.author}`)}
+                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer font-medium"
                         >
-                          {comment.author?.name || "Anonymous"}
+                          {post.author}
                         </button>
-                        <span className="text-xs text-[#9B9A97]">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </span>
-                        {isOwnComment(comment) && (
-                          <button
-                            onClick={() => deleteComment(comment.id)}
-                            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
-                            title="Delete comment"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
+                          <span className="text-xs text-gray-500 dark:text-gray-500">
+                            • {post.readTime} min read
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {post.tags.map(tag => (
+                            <span
+                              key={tag}
+                              className="text-xs px-2 py-1 bg-gray-100 dark:bg-[#2F2F2F] text-gray-600 dark:text-gray-400 rounded"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <p className="text-sm text-[#37352F] dark:text-[#E3E3E3] mt-1">{comment.text}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 sm:flex-col sm:items-end">
+                        <button className="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                          <Heart className="w-4 h-4" />
+                          <span className="hidden sm:inline">{post.likes}</span>
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          <MessageCircle className="w-4 h-4" />
+                          <span className="hidden sm:inline">{post.comments}</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </article>
                 ))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No articles found. Try adjusting your search or filter.
+                  </p>
+                </div>
               )}
             </div>
-            
-            <div className="p-4 border-t border-gray-200 dark:border-[#2F2F2F]">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && submitComment()}
-                  placeholder="Write a comment..."
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-[#3F3F3F] rounded-lg bg-white dark:bg-[#191919] text-[#37352F] dark:text-[#E3E3E3] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  onClick={submitComment}
-                  disabled={!commentText.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send size={16} />
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
-
-      <ShareModal 
-        isOpen={showShareModal} 
-        onClose={() => setShowShareModal(false)} 
-        onSuccess={loadFeed}
-      />
+        )}
+      </div>
     </div>
   );
 }

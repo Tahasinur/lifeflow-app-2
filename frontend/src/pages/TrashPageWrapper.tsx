@@ -15,7 +15,7 @@ export function TrashPageWrapper() {
     <TrashPage
       trashPages={trashPages}
       onRestore={handleRestorePage}
-      onPermanentDelete={handlePermanentDelete}
+      onDeleteForever={handlePermanentDelete}
     />
   );
 }

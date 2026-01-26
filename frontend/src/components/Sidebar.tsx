@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Trash2, Search, ChevronDown, ChevronRight, Settings, Globe, Trash, Inbox } from 'lucide-react';
+import { Plus, Trash2, Search, ChevronDown, ChevronRight, Globe, Trash, Inbox } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { Page } from '../types';
 import { UserDropdown } from './UserDropdown';
@@ -272,9 +272,12 @@ export function Sidebar({
         </button>
         <button
           onClick={() => {
-            toast.info('Inbox coming soon');
+            onSelectPage(null);
+            navigate('/inbox');
           }}
-          className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3]"
+          className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3] ${
+            location.pathname === '/inbox' ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
+          }`}
         >
           <Inbox className="w-4 h-4" />
           <span>Inbox</span>

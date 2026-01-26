@@ -1,6 +1,6 @@
 import { LogOut, Moon, Sun, Check, Plus, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { useTheme } from '../hooks/useTheme';
 
 interface UserDropdownProps {

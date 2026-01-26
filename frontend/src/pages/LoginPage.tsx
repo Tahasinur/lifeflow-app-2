@@ -1,20 +1,36 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import authService from '../services/authService';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('lifeflow-auth', 'true');
-    navigate('/');
+    setLoading(true);
+
+    try {
+      const response = await authService.login(email, password);
+      if (response.token) {
+        authService.setToken(response.token);
+        toast.success('Login successful!');
+        navigate('/');
+      } else {
+        toast.error(response.message || 'Login failed');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialLogin = () => {
-    localStorage.setItem('lifeflow-auth', 'true');
-    navigate('/');
+    toast.info('Social login coming soon!');
   };
 
   return (
@@ -91,6 +107,7 @@ export function LoginPage() {
               className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 transition-shadow"
               style={{ color: '#37352F' }}
               required
+              disabled={loading}
             />
           </div>
 
@@ -106,14 +123,16 @@ export function LoginPage() {
               className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 transition-shadow"
               style={{ color: '#37352F' }}
               required
+              disabled={loading}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium mt-6"
+            className="w-full px-4 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
           >
-            Log in
+            {loading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
 

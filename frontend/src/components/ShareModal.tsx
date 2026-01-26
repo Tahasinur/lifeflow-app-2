@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Page } from '../types';
 
@@ -20,6 +20,8 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isPageLocked, setIsPageLocked] = useState(false);
+  const [shareLink, setShareLink] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,10 +54,14 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
       });
       if (res.ok) {
         const data = await res.json();
-        setPages(data);
+        setPages(data || []);
+      } else {
+        console.error('Failed to load pages:', res.statusText);
+        setPages([]);
       }
     } catch (err) {
       console.error('Failed to load pages:', err);
+      setPages([]);
     }
   };
 
@@ -68,6 +74,36 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
 
   const handleRemoveTag = (tag: string) => {
     setTags(tags.filter(t => t !== tag));
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setLinkCopied(true);
+      toast.success('Link copied to clipboard');
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (err) {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareLink;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          setLinkCopied(true);
+          toast.success('Link copied to clipboard');
+          setTimeout(() => setLinkCopied(false), 2000);
+        } else {
+          toast.error('Failed to copy link');
+        }
+      } catch (fallbackErr) {
+        toast.error('Failed to copy link');
+      }
+    }
   };
 
   const handleClose = () => {
@@ -113,13 +149,18 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
       });
 
       if (res.ok) {
+        const data = await res.json();
+        // Generate a shareable link
+        const link = `${window.location.origin}/community/${data.id || 'shared'}`;
+        setShareLink(link);
         toast.success('Post shared successfully!');
         onSuccess();
-        handleClose();
+        // Don't close immediately to show the share link
       } else {
         toast.error('Failed to share post');
       }
     } catch (err) {
+      console.error('Share error:', err);
       toast.error('Failed to share post');
     } finally {
       setLoading(false);
@@ -129,6 +170,70 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
   if (!isOpen) return null;
 
   const selectedPage = pages.find(p => p.id === selectedPageId);
+
+  // If link was copied, show the link display
+  if (shareLink) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-[#202020] rounded-lg w-full max-w-lg mx-4 max-h-[90vh] overflow-auto">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-[#2F2F2F]">
+            <h3 className="font-semibold text-[#37352F] dark:text-[#FFFFFF]">Share Link</h3>
+            <button 
+              onClick={handleClose}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-[#2F2F2F] rounded"
+            >
+              <X size={20} className="text-gray-500" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3] mb-3">
+                Your post has been shared!
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Copy the link below to share with others:
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={shareLink}
+                readOnly
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-[#3F3F3F] rounded-lg bg-gray-50 dark:bg-[#191919] text-[#37352F] dark:text-[#E3E3E3] text-sm focus:outline-none"
+              />
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap"
+              >
+                {linkCopied ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-gray-200 dark:border-[#2F2F2F] flex justify-end">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

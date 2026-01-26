@@ -2,11 +2,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { AdminPage } from './pages/AdminPage';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { EditorPage } from './pages/EditorPage';
 import { TrashPageWrapper } from './pages/TrashPageWrapper';
 import { FeedPage } from './pages/FeedPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { UserProfilePage } from './pages/UserProfilePage';
+import { InboxPage } from './pages/InboxPage';
 import { RequireAuth } from './components/RequireAuth';
 
 export default function App() {
@@ -29,8 +32,11 @@ export default function App() {
         >
           <Route index element={<EditorPage />} />
           <Route path="feed" element={<FeedPage />} />
+          <Route path="inbox" element={<InboxPage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />
+          <Route path="user/:userId" element={<UserProfilePage />} />
           <Route path="trash" element={<TrashPageWrapper />} />
+          <Route path="admin" element={<AdminPage />} />
         </Route>
 
         {/* Catch-all redirect */}

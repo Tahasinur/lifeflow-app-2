@@ -73,6 +73,18 @@ export function DialogTitle({ children }: DialogTitleProps) {
   );
 }
 
+interface DialogDescriptionProps {
+  children: React.ReactNode;
+}
+
+export function DialogDescription({ children }: DialogDescriptionProps) {
+  return (
+    <p className="text-sm" style={{ color: '#9B9A97' }}>
+      {children}
+    </p>
+  );
+}
+
 interface DialogCloseProps {
   onClose: () => void;
 }

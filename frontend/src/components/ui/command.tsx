@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Command as CommandPrimitive } from "cmdk@1.1.1";
-import { SearchIcon } from "lucide-react@0.487.0";
+import { Command as CommandPrimitive } from "cmdk";
+import { SearchIcon } from "lucide-react";
 
 import { cn } from "./utils";
 import {
@@ -40,7 +40,7 @@ function CommandDialog({
 }) {
   return (
     <Dialog {...props}>
-      <DialogHeader className="sr-only">
+      <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
