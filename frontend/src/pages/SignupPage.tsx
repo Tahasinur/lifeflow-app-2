@@ -30,6 +30,16 @@ export function SignupPage() {
       const response = await authService.register(email, password, name);
       if (response.token) {
         authService.setToken(response.token);
+        // Extract first name from user's full name
+        const firstName = response.name?.split(' ')[0] || 'User';
+        // Store user info in localStorage for data isolation
+        localStorage.setItem('lifeflow-user', JSON.stringify({
+          id: response.userId,
+          email: response.email,
+          name: response.name,
+          firstName: firstName,
+          role: response.role
+        }));
         toast.success('Account created successfully!');
         navigate('/');
       } else {

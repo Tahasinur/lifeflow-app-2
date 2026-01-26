@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, Search, ChevronDown, ChevronRight, Globe, Trash, Inbox } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { Page } from '../types';
@@ -6,6 +6,7 @@ import { UserDropdown } from './UserDropdown';
 import { SettingsModal } from './SettingsModal';
 import { toast } from 'sonner';
 import { Logo } from './Logo';
+import { getUserFirstName } from '../hooks/useDashboard';
 
 interface SidebarProps {
   pages: Page[];
@@ -180,7 +181,26 @@ export function Sidebar({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [firstName, setFirstName] = useState<string>('User');
+  const [userId, setUserId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Load user's first name and ID on mount
+  useEffect(() => {
+    const name = getUserFirstName();
+    setFirstName(name);
+    
+    // Get userId from localStorage
+    const storedUser = localStorage.getItem('lifeflow-user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserId(user.id);
+      } catch (e) {
+        console.error('Failed to parse user data');
+      }
+    }
+  }, []);
 
   // Filter pages based on search query
   const filteredPages = searchQuery
@@ -229,7 +249,7 @@ export function Sidebar({
             <Logo size={20} />
           {/* Workspace Name */}
           <span className="flex-1 text-sm font-medium truncate text-left text-[#37352F] dark:text-[#E3E3E3]">
-            User's Workspace
+            {firstName}'s Workspace
           </span>
           {/* Chevron */}
           <ChevronDown size={16} className="text-[#9B9A97]" />
@@ -417,7 +437,7 @@ export function Sidebar({
       </div>
 
       {/* Settings Modal */}
-      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} userId={userId || undefined} />
     </aside>
   );
 }

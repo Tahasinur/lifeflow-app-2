@@ -24,6 +24,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
       })
       .catch(() => {
         authService.removeToken();
+        localStorage.removeItem('lifeflow-user');
         setIsAuthenticated(false);
       });
   }, []);

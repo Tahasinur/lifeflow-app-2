@@ -63,6 +63,7 @@ export const authService = {
 
   removeToken(): void {
     localStorage.removeItem('lifeflow-token');
+    localStorage.removeItem('lifeflow-user');
   },
 
   isAuthenticated(): boolean {

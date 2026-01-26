@@ -1,89 +1,289 @@
-import { useState } from 'react';
-import { X, User, Settings, Users, Upload, Moon, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, User, Settings, Users, Upload, Moon, Sun, AlertTriangle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme } from '../hooks/useTheme';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userId?: string;
 }
 
-type TabType = 'account' | 'workspace' | 'members';
+type TabType = 'account' | 'settings' | 'teamspace';
 
-interface Member {
+// ==================== Types ====================
+
+interface AccountSettings {
   id: string;
-  name: string;
   email: string;
-  role: 'Admin' | 'Member' | 'Guest';
+  name: string;
+  preferredName: string;
   avatar: string;
 }
 
-const MOCK_MEMBERS: Member[] = [
-  {
-    id: '1',
-    name: 'User Name',
-    email: 'user@example.com',
-    role: 'Admin',
-    avatar: 'U',
-  },
-  {
-    id: '2',
-    name: 'Jane Cooper',
-    email: 'jane.cooper@example.com',
-    role: 'Member',
-    avatar: 'JC',
-  },
+interface UserPreferences {
+  id: string;
+  userId: string;
+  theme: string;
+  language: string;
+  spellcheckerLanguages: string;
+  timezone: string;
+  use24HourFormat: boolean;
+}
+
+interface WorkspaceSettings {
+  id: string;
+  userId: string;
+  workspaceName: string;
+  workspaceIcon: string;
+  customLandingPageJson: string;
+  allowPublicAccess: boolean;
+  enableNotifications: boolean;
+  enableEmailNotifications: boolean;
+}
+
+interface Teamspace {
+  id: string;
+  name: string;
+  description: string;
+  owners: string;
+  accessLevel: string;
+  memberIds: string;
+  updatedAt: string;
+}
+
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Spanish' },
+  { code: 'fr', label: 'French' },
+  { code: 'de', label: 'German' },
+  { code: 'ja', label: 'Japanese' },
+  { code: 'zh', label: 'Chinese' },
 ];
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+const TIMEZONES = [
+  'UTC',
+  'EST',
+  'CST',
+  'MST',
+  'PST',
+  'GMT',
+  'CET',
+  'IST',
+  'JST',
+  'AEST',
+];
+
+const API_BASE = 'http://localhost:8080/api';
+
+export function SettingsModal({ isOpen, onClose, userId }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('account');
-  const [preferredName, setPreferredName] = useState('User Name');
-  const [email, setEmail] = useState('user@example.com');
-  const [workspaceName, setWorkspaceName] = useState("User's Workspace");
-  const [workspaceSlug, setWorkspaceSlug] = useState('user-workspace');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [members, setMembers] = useState<Member[]>(MOCK_MEMBERS);
+  const [loading, setLoading] = useState(false);
   const { isDark, toggleTheme } = useTheme();
 
-  if (!isOpen) return null;
+  // Account state
+  const [accountSettings, setAccountSettings] = useState<AccountSettings | null>(null);
+  const [preferredName, setPreferredName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handlePhotoUpload = () => {
-    toast.info('Photo upload coming soon');
-  };
+  // Preferences state
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+  const [theme, setTheme] = useState('light');
+  const [language, setLanguage] = useState('en');
+  const [spellcheckerLanguages, setSpellcheckerLanguages] = useState('en');
+  const [timezone, setTimezone] = useState('UTC');
 
-  const handleSaveProfile = () => {
-    toast.success('Profile updated successfully');
-  };
+  // Workspace state
+  const [workspaceSettings, setWorkspaceSettings] = useState<WorkspaceSettings | null>(null);
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceIcon, setWorkspaceIcon] = useState('📓');
 
-  const handleSaveWorkspace = () => {
-    toast.success('Workspace settings saved');
-  };
+  // Teamspace state
+  const [teamspaces, setTeamspaces] = useState<Teamspace[]>([]);
 
-  const handleDeleteWorkspace = () => {
-    if (confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) {
-      toast.error('Workspace deletion is not available in demo mode');
+  // ==================== API Calls ====================
+
+  const fetchAccountSettings = async () => {
+    if (!userId) return;
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/settings/account/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAccountSettings(data);
+        setPreferredName(data.preferredName || '');
+      }
+    } catch (error) {
+      toast.error('Failed to load account settings');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAddMembers = () => {
-    toast.info('Invite members feature coming soon');
+  const fetchPreferences = async () => {
+    if (!userId) return;
+    try {
+      const response = await fetch(`${API_BASE}/settings/preferences/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPreferences(data);
+        setTheme(data.theme);
+        setLanguage(data.language);
+        setSpellcheckerLanguages(data.spellcheckerLanguages);
+        setTimezone(data.timezone);
+      }
+    } catch (error) {
+      toast.error('Failed to load preferences');
+    }
   };
 
-  const handleRoleChange = (memberId: string, newRole: Member['role']) => {
-    setMembers(members.map(m => m.id === memberId ? { ...m, role: newRole } : m));
-    toast.success('Member role updated');
+  const fetchWorkspaceSettings = async () => {
+    if (!userId) return;
+    try {
+      const response = await fetch(`${API_BASE}/settings/workspace/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setWorkspaceSettings(data);
+        setWorkspaceName(data.workspaceName);
+        setWorkspaceIcon(data.workspaceIcon);
+      }
+    } catch (error) {
+      toast.error('Failed to load workspace settings');
+    }
   };
 
-  const filteredMembers = members.filter(m =>
-    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const fetchTeamspaces = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/settings/teamspaces`);
+      if (response.ok) {
+        const data = await response.json();
+        setTeamspaces(data);
+      }
+    } catch (error) {
+      toast.error('Failed to load teamspaces');
+    }
+  };
+
+  // Load data when tab changes
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (activeTab === 'account') {
+      fetchAccountSettings();
+    } else if (activeTab === 'settings') {
+      fetchPreferences();
+      fetchWorkspaceSettings();
+    } else if (activeTab === 'teamspace') {
+      fetchTeamspaces();
+    }
+  }, [activeTab, isOpen]);
+
+  // ==================== Handlers ====================
+
+  const handleSaveAccount = async () => {
+    if (!userId || !accountSettings) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/settings/account/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          preferredName: preferredName || accountSettings.name,
+          email: accountSettings.email,
+          avatar: accountSettings.avatar,
+        }),
+      });
+
+      if (response.ok) {
+        const updated = await response.json();
+        setAccountSettings(updated);
+        toast.success('Account settings saved');
+      } else {
+        toast.error('Failed to save account settings');
+      }
+    } catch (error) {
+      toast.error('Error saving account settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePreferences = async () => {
+    if (!userId || !preferences) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/settings/preferences/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          theme,
+          language,
+          spellcheckerLanguages,
+          timezone,
+          use24HourFormat: false,
+        }),
+      });
+
+      if (response.ok) {
+        const updated = await response.json();
+        setPreferences(updated);
+        toast.success('Preferences saved');
+      } else {
+        toast.error('Failed to save preferences');
+      }
+    } catch (error) {
+      toast.error('Error saving preferences');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveWorkspace = async () => {
+    if (!userId || !workspaceSettings) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/settings/workspace/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceName,
+          workspaceIcon,
+          customLandingPageJson: workspaceSettings.customLandingPageJson,
+          allowPublicAccess: workspaceSettings.allowPublicAccess,
+          enableNotifications: workspaceSettings.enableNotifications,
+          enableEmailNotifications: workspaceSettings.enableEmailNotifications,
+        }),
+      });
+
+      if (response.ok) {
+        const updated = await response.json();
+        setWorkspaceSettings(updated);
+        toast.success('Workspace settings saved');
+      } else {
+        toast.error('Failed to save workspace settings');
+      }
+    } catch (error) {
+      toast.error('Error saving workspace settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = () => {
+    toast.info('Photo upload feature coming soon');
+  };
 
   const tabs = [
     { id: 'account' as TabType, label: 'My Account', icon: User },
-    { id: 'workspace' as TabType, label: 'Settings', icon: Settings },
-    { id: 'members' as TabType, label: 'Members', icon: Users },
+    { id: 'settings' as TabType, label: 'Settings', icon: Settings },
+    { id: 'teamspace' as TabType, label: 'Teamspace Settings', icon: Users },
   ];
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -124,9 +324,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           {/* Header with Close Button */}
           <div className="flex items-center justify-between px-8 py-6 border-b border-gray-200 dark:border-gray-700">
             <h1 className="text-2xl font-semibold text-[#37352F] dark:text-white">
-              {activeTab === 'account' && 'My Profile'}
-              {activeTab === 'workspace' && 'Workspace Settings'}
-              {activeTab === 'members' && 'Members'}
+              {activeTab === 'account' && 'My Account'}
+              {activeTab === 'settings' && 'Settings & Preferences'}
+              {activeTab === 'teamspace' && 'Teamspace Settings'}
             </h1>
             <button
               onClick={onClose}
@@ -138,260 +338,359 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-8 py-6">
-            {/* My Account Tab */}
-            {activeTab === 'account' && (
-              <div className="space-y-8">
-                {/* Avatar Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-3 text-[#37352F] dark:text-white">
-                    Photo
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center bg-[#37352F] dark:bg-white text-white dark:text-[#37352F] text-2xl font-medium">
-                      U
-                    </div>
-                    <button
-                      onClick={handlePhotoUpload}
-                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[#37352F] dark:text-white"
-                    >
-                      <Upload size={14} className="inline mr-2" />
-                      Upload photo
-                    </button>
-                  </div>
-                </div>
-
-                {/* Form Fields */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-[#37352F] dark:text-white">
-                    Preferred Name
-                  </label>
-                  <input
-                    type="text"
-                    value={preferredName}
-                    onChange={(e) => setPreferredName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-[#37352F] dark:text-white">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
-                  />
-                </div>
-
-                {/* Appearance Section */}
-                <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <h3 className="text-base font-semibold mb-4 text-[#37352F] dark:text-white">
-                    Appearance
-                  </h3>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Moon size={18} className="text-[#37352F] dark:text-white" />
-                      <span className="text-sm text-[#37352F] dark:text-white">
-                        Dark Mode
-                      </span>
-                    </div>
-                    <button
-                      onClick={toggleTheme}
-                      className={`relative w-11 h-6 rounded-full transition-colors ${
-                        isDark ? 'bg-black dark:bg-white' : 'bg-gray-300'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${
-                          isDark ? 'translate-x-5 bg-white dark:bg-black' : 'translate-x-0 bg-white'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Save Button */}
-                <div className="pt-4">
-                  <button
-                    onClick={handleSaveProfile}
-                    className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                </div>
+            {loading && (
+              <div className="flex items-center justify-center h-full">
+                <Loader className="animate-spin" size={32} />
               </div>
             )}
 
-            {/* Workspace Settings Tab */}
-            {activeTab === 'workspace' && (
-              <div className="space-y-8">
-                {/* Workspace Name */}
+            {/* My Account Tab */}
+            {activeTab === 'account' && !loading && (
+              <div className="space-y-8 max-w-2xl">
+                {/* Account Settings Header */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-[#37352F] dark:text-white">
-                    Workspace Name
-                  </label>
-                  <input
-                    type="text"
-                    value={workspaceName}
-                    onChange={(e) => setWorkspaceName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
-                  />
-                </div>
+                  <h2 className="text-lg font-semibold text-[#37352F] dark:text-white mb-4">
+                    Account
+                  </h2>
 
-                {/* Domain / URL */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-[#37352F] dark:text-white">
-                    Workspace URL
-                  </label>
-                  <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
-                    <span className="px-3 py-2 text-sm bg-[#F7F7F5] dark:bg-[#2B2B2B] text-gray-500 dark:text-gray-400">
-                      lifeflow.so/
-                    </span>
+                  {/* Preferred Name */}
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Preferred Name
+                    </label>
                     <input
                       type="text"
-                      value={workspaceSlug}
-                      onChange={(e) => setWorkspaceSlug(e.target.value)}
-                      className="flex-1 px-3 py-2 text-sm focus:outline-none bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                      value={preferredName}
+                      onChange={(e) => setPreferredName(e.target.value)}
+                      placeholder="Enter your preferred name"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
                     />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      This is how your name will appear to other users
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    This is the URL where your workspace can be accessed
-                  </p>
-                </div>
 
-                {/* Icon */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-[#37352F] dark:text-white">
-                    Workspace Icon
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-md border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-[#37352F] dark:bg-white text-white dark:text-[#37352F] text-xl font-medium">
-                      U
-                    </div>
-                    <button
-                      onClick={() => toast.info('Icon picker coming soon')}
-                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[#37352F] dark:text-white"
-                    >
-                      Change Icon
-                    </button>
-                  </div>
-                </div>
-
-                {/* Save Button */}
-                <div className="pt-4">
                   <button
-                    onClick={handleSaveWorkspace}
-                    className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                    onClick={handleSaveAccount}
+                    disabled={loading}
+                    className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
                     Save Changes
                   </button>
                 </div>
 
-                {/* Danger Zone */}
-                <div className="pt-8 mt-8 border-t-2 border-red-200 dark:border-red-900">
-                  <div className="flex items-start gap-3 mb-4">
-                    <AlertTriangle size={20} className="text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h3 className="text-base font-semibold text-red-600 dark:text-red-400 mb-1">
-                        Danger Zone
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Deleting your workspace will permanently remove all pages, data, and member access. This action cannot be undone.
-                      </p>
-                    </div>
+                {/* Account Security */}
+                <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg font-semibold text-[#37352F] dark:text-white mb-4">
+                    Account Security
+                  </h2>
+
+                  {/* Email */}
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={accountSettings?.email || ''}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-100 dark:bg-[#2B2B2B] text-[#37352F] dark:text-white opacity-75 cursor-not-allowed"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Your email address cannot be changed through settings. Contact support if needed.
+                    </p>
                   </div>
+
+                  {/* Password */}
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm your password"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                    />
+                  </div>
+
                   <button
-                    onClick={handleDeleteWorkspace}
-                    className="px-4 py-2 border-2 border-red-500 dark:border-red-400 text-red-600 dark:text-red-400 text-sm rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-medium"
+                    disabled={!password || password !== confirmPassword}
+                    className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
-                    Delete this workspace
+                    Update Password
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Members Tab */}
-            {activeTab === 'members' && (
-              <div className="space-y-6">
-                {/* Header with Add Button */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Manage who has access to this workspace
-                  </p>
+            {/* Settings Tab */}
+            {activeTab === 'settings' && !loading && (
+              <div className="space-y-8 max-w-2xl">
+                {/* Workspace Settings */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#37352F] dark:text-white mb-4">
+                    Workspace Settings
+                  </h2>
+
+                  {/* Workspace Name */}
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Workspace Name
+                    </label>
+                    <input
+                      type="text"
+                      value={workspaceName}
+                      onChange={(e) => setWorkspaceName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                    />
+                  </div>
+
+                  {/* Icon */}
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Icon
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      Upload an image or pick an emoji. It will show up in your sidebar and notifications.
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-md border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-[#2B2B2B] text-2xl">
+                        {workspaceIcon}
+                      </div>
+                      <button
+                        onClick={handlePhotoUpload}
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[#37352F] dark:text-white"
+                      >
+                        <Upload size={14} className="inline mr-2" />
+                        Upload or pick emoji
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Custom Landing Page */}
+                  <div className="space-y-2 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Custom Landing Page
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      When a new workspace member joins, a copy of this page will automatically be installed in their Private section.
+                    </p>
+                    <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[#37352F] dark:text-white">
+                      Configure Landing Page
+                    </button>
+                  </div>
+
                   <button
-                    onClick={handleAddMembers}
-                    className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                    onClick={handleSaveWorkspace}
+                    disabled={loading}
+                    className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
-                    Add members
+                    Save Changes
                   </button>
                 </div>
 
-                {/* Search */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Filter by name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                  />
-                </div>
+                {/* Preferences */}
+                <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg font-semibold text-[#37352F] dark:text-white mb-4">
+                    Preferences
+                  </h2>
 
-                {/* Members List */}
-                <div className="space-y-0">
-                  {filteredMembers.length > 0 ? (
-                    filteredMembers.map((member, index) => (
-                      <div
-                        key={member.id}
-                        className={`flex items-center justify-between py-4 ${
-                          index !== filteredMembers.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
+                  {/* Appearance */}
+                  <div className="space-y-4 mb-6">
+                    <label className="block text-sm font-medium text-[#37352F] dark:text-white">
+                      Appearance
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Customize how Lifeflow looks on your device.
+                    </p>
+                    <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-md">
+                      <div className="flex items-center gap-3">
+                        {isDark ? <Moon size={18} /> : <Sun size={18} />}
+                        <span className="text-sm text-[#37352F] dark:text-white">
+                          {isDark ? 'Dark Mode' : 'Light Mode'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={toggleTheme}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${
+                          isDark ? 'bg-gray-700' : 'bg-gray-300'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#37352F] dark:bg-white text-white dark:text-[#37352F] text-sm font-medium">
-                            {member.avatar}
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-[#37352F] dark:text-white">
-                              {member.name}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {member.email}
-                            </div>
-                          </div>
-                        </div>
-                        {member.role === 'Admin' ? (
-                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#F7F7F5] dark:bg-[#2B2B2B] text-[#37352F] dark:text-white">
-                            Admin
-                          </span>
-                        ) : (
-                          <select
-                            value={member.role}
-                            onChange={(e) => handleRoleChange(member.id, e.target.value as Member['role'])}
-                            className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
-                          >
-                            <option value="Member">Member</option>
-                            <option value="Guest">Guest</option>
-                            <option value="Admin">Admin</option>
-                          </select>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        No members found
-                      </p>
+                        <span
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${
+                            isDark ? 'translate-x-5 bg-white' : 'translate-x-0 bg-white'
+                          }`}
+                        />
+                      </button>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Language & Time */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-[#37352F] dark:text-white">
+                      Language & Time
+                    </h3>
+
+                    {/* Language */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
+                        Language
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        Change the language used in the user interface.
+                      </p>
+                      <select
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                      >
+                        {LANGUAGES.map((lang) => (
+                          <option key={lang.code} value={lang.code}>
+                            {lang.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Timezone */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
+                        Timezone
+                      </label>
+                      <select
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                      >
+                        {TIMEZONES.map((tz) => (
+                          <option key={tz} value={tz}>
+                            {tz}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Spellchecker Languages */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
+                        Spellchecker Languages
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        Change the languages used by the spellchecker.
+                      </p>
+                      <select
+                        value={spellcheckerLanguages}
+                        onChange={(e) => setSpellcheckerLanguages(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-[#2B2B2B] text-[#37352F] dark:text-white"
+                      >
+                        {LANGUAGES.map((lang) => (
+                          <option key={lang.code} value={lang.code}>
+                            {lang.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <button
+                      onClick={handleSavePreferences}
+                      disabled={loading}
+                      className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    >
+                      Save Preferences
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Teamspace Settings Tab */}
+            {activeTab === 'teamspace' && !loading && (
+              <div className="space-y-6 max-w-4xl">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#37352F] dark:text-white mb-2">
+                    Manage Teamspaces
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Manage all teamspaces you have access to here
+                  </p>
                 </div>
 
-                {filteredMembers.length === members.length && members.length <= 2 && (
-                  <div className="text-center py-8">
+                {/* Teamspaces Table */}
+                {teamspaces.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700">
+                          <th className="px-4 py-3 text-left font-medium text-[#37352F] dark:text-white">
+                            Teamspace
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-[#37352F] dark:text-white">
+                            Owners
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-[#37352F] dark:text-white">
+                            Access
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-[#37352F] dark:text-white">
+                            Updated
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teamspaces.map((teamspace, index) => (
+                          <tr
+                            key={teamspace.id}
+                            className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30 ${
+                              index === teamspaces.length - 1 ? 'border-b-0' : ''
+                            }`}
+                          >
+                            <td className="px-4 py-4 text-[#37352F] dark:text-white font-medium">
+                              {teamspace.name}
+                            </td>
+                            <td className="px-4 py-4 text-[#37352F] dark:text-white">
+                              <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                {teamspace.owners}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <span
+                                className={`text-xs px-3 py-1 rounded-full ${
+                                  teamspace.accessLevel === 'public'
+                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                }`}
+                              >
+                                {teamspace.accessLevel}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 text-gray-500 dark:text-gray-400 text-xs">
+                              {new Date(teamspace.updatedAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      No other members yet
+                      No teamspaces found
                     </p>
                   </div>
                 )}
@@ -403,3 +702,4 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     </div>
   );
 }
+

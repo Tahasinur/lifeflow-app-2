@@ -4,10 +4,30 @@ import { Page } from '../types';
 const getUserId = (): string | null => {
   const storedUser = localStorage.getItem('lifeflow-user');
   if (storedUser) {
-    const user = JSON.parse(storedUser);
-    return user.id || null;
+    try {
+      const user = JSON.parse(storedUser);
+      return user.id ? String(user.id) : null;
+    } catch (e) {
+      console.error('Failed to parse stored user', e);
+      localStorage.removeItem('lifeflow-user');
+      return null;
+    }
   }
   return null;
+};
+
+export const getUserFirstName = (): string => {
+  const storedUser = localStorage.getItem('lifeflow-user');
+  if (storedUser) {
+    try {
+      const user = JSON.parse(storedUser);
+      return user.firstName || 'User';
+    } catch (e) {
+      console.error('Failed to parse stored user', e);
+      return 'User';
+    }
+  }
+  return 'User';
 };
 
 const getAuthHeaders = (): Record<string, string> => {

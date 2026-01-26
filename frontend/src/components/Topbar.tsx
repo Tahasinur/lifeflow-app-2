@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, Share2, MoreHorizontal, Star, Copy, Check, Users, X, Copy as CopyIcon, Trash2, Lock, Unlock, Type, Maximize2, Settings, Download, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Page } from '../types';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import { Input } from './ui/input';
+import { getUserFirstName } from '../hooks/useDashboard';
 
 interface TabItem {
   id: string;
@@ -41,6 +42,13 @@ export function Topbar({
   const [isPageLocked, setIsPageLocked] = useState(currentPage?.isLocked || false);
   const [showSmallText, setShowSmallText] = useState(false);
   const [isFullWidth, setIsFullWidth] = useState(false);
+  const [firstName, setFirstName] = useState<string>('User');
+
+  // Load user's first name on mount
+  useEffect(() => {
+    const name = getUserFirstName();
+    setFirstName(name);
+  }, []);
 
   const handleCopyLink = async () => {
     const url = window.location.href;
@@ -153,7 +161,7 @@ export function Topbar({
           </button>
 
           <div className="flex items-center gap-2 text-sm text-[#37352F] dark:text-[#E3E3E3]">
-            <span className="text-gray-500 dark:text-gray-400">User's Workspace</span>
+            <span className="text-gray-500 dark:text-gray-400">{firstName}'s Workspace</span>
             <span className="text-gray-400 dark:text-gray-500">/</span>
             <span className="flex items-center gap-2">
               <span>{currentPage?.icon || '📄'}</span>
