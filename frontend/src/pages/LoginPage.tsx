@@ -17,16 +17,6 @@ export function LoginPage() {
       const response = await authService.login(email, password);
       if (response.token) {
         authService.setToken(response.token);
-        // Extract first name from user's full name
-        const firstName = response.name?.split(' ')[0] || 'User';
-        // Store user info in localStorage for data isolation
-        localStorage.setItem('lifeflow-user', JSON.stringify({
-          id: response.userId,
-          email: response.email,
-          name: response.name,
-          firstName: firstName,
-          role: response.role
-        }));
         toast.success('Login successful!');
         navigate('/');
       } else {

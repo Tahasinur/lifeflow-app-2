@@ -241,7 +241,7 @@ class WebSocketNotificationService {
   }
 
   /**
-   * Get unread notification count
+   * Get unread notification count with retry logic
    */
   getUnreadCount(): Promise<number> {
     return new Promise((resolve, reject) => {
@@ -250,26 +250,37 @@ class WebSocketNotificationService {
         return;
       }
 
+      let timeout: NodeJS.Timeout | undefined;
+
       try {
         const subscription = this.client.subscribe(
           `/user/${this.userId}/queue/unread`,
           (message: Message) => {
             try {
+              if (timeout) clearTimeout(timeout);
               const data = JSON.parse(message.body);
               subscription.unsubscribe();
               resolve(data.unreadCount || 0);
             } catch (error) {
+              if (timeout) clearTimeout(timeout);
               subscription.unsubscribe();
               reject(error);
             }
           }
         );
 
+        // Add timeout to prevent hanging
+        timeout = setTimeout(() => {
+          subscription.unsubscribe();
+          reject(new Error('Unread count request timeout'));
+        }, 5000);
+
         this.client.publish({
           destination: '/app/notifications/unread',
           body: '{}',
         });
       } catch (error) {
+        if (timeout) clearTimeout(timeout);
         reject(error);
       }
     });

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Search, Copy, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import { FeedItem } from '../types';
 
 export function FeedPage() {
@@ -197,33 +198,50 @@ export function FeedPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {filteredItems.map(item => (
-              <article
+            {filteredItems.map((item, index) => (
+              <motion.article
                 key={item.id}
-                className="bg-white dark:bg-[#202020] border border-gray-200 dark:border-[#2F2F2F] rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="bg-white dark:bg-[#202020] border border-gray-200 dark:border-[#2F2F2F] rounded-lg overflow-hidden group"
+                style={{
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 0 0 0 rgba(59, 130, 246, 0)',
+                }}
               >
-                <div className="p-6">
+                <motion.div
+                  className="p-6"
+                  whileHover={{
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
                   {/* Header */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          item.type === 'template' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
-                          item.type === 'blog' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
-                          'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                        }`}>
+                        <motion.span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            item.type === 'template' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
+                            item.type === 'blog' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
+                            'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                        >
                           {item.type === 'template' ? 'Template' : item.type === 'blog' ? 'Blog' : 'Update'}
-                        </span>
+                        </motion.span>
                         <span className="text-xs text-gray-500 dark:text-gray-500">
                           {formatDate(item.createdAt)}
                         </span>
                       </div>
-                      <button
+                      <motion.button
                         onClick={() => handleOpenItem(item)}
                         className="text-lg font-semibold text-[#37352F] dark:text-[#E3E3E3] mb-2 hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer transition-colors text-left"
+                        whileHover={{ x: 5 }}
                       >
                         {item.title}
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
 
@@ -235,23 +253,33 @@ export function FeedPage() {
                   {/* Tags */}
                   {item.tags && item.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {item.tags.map(tag => (
-                        <span
+                      {item.tags.map((tag, tagIndex) => (
+                        <motion.span
                           key={tag}
                           className="px-2 py-1 bg-gray-100 dark:bg-[#2F2F2F] text-gray-700 dark:text-gray-300 text-xs rounded-full"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: tagIndex * 0.05 }}
+                          whileHover={{ scale: 1.1, backgroundColor: '#3B82F6', color: 'white' }}
                         >
                           {tag}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   )}
 
                   {/* Author */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-[#2F2F2F]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">
+                    <motion.div 
+                      className="flex items-center gap-2 cursor-pointer"
+                      whileHover={{ x: 5 }}
+                    >
+                      <motion.div 
+                        className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold"
+                        whileHover={{ scale: 1.1 }}
+                      >
                         {item.author?.avatar || 'U'}
-                      </div>
+                      </motion.div>
                       <div>
                         <button
                           onClick={() => handleAuthorClick(item.author?.id, item.author?.name)}
@@ -263,47 +291,62 @@ export function FeedPage() {
                           {item.author?.email || 'anonymous@example.com'}
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-3">
-                      <button
+                      <motion.button
                         onClick={() => handleLike(item.id)}
                         className={`flex items-center gap-1 transition-colors ${
                           likedItems.has(item.id)
                             ? 'text-red-600 dark:text-red-400'
                             : 'text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400'
                         }`}
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
                       >
-                        <Heart className="w-4 h-4" fill={likedItems.has(item.id) ? 'currentColor' : 'none'} />
+                        <motion.div
+                          animate={likedItems.has(item.id) ? { scale: [1, 1.3, 1] } : {}}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Heart className="w-4 h-4" fill={likedItems.has(item.id) ? 'currentColor' : 'none'} />
+                        </motion.div>
                         <span className="text-sm">{item.likes}</span>
-                      </button>
-                      <button className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                      </motion.button>
+                      <motion.button 
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
                         <MessageCircle className="w-4 h-4" />
                         <span className="text-sm">{item.commentCount}</span>
-                      </button>
+                      </motion.button>
                       {item.type === 'template' && item.sourcePageId && (
-                        <button
+                        <motion.button
                           onClick={() => handleCopyTemplate(item)}
                           className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors px-2 py-1 hover:bg-gray-100 dark:hover:bg-[#2F2F2F] rounded"
                           title="Copy template"
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.9 }}
                         >
                           <Copy className="w-4 h-4" />
-                        </button>
+                        </motion.button>
                       )}
                       {item.type === 'blog' && (
-                        <button
+                        <motion.button
                           onClick={() => handleOpenItem(item)}
                           className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-2 py-1 hover:bg-gray-100 dark:hover:bg-[#2F2F2F] rounded"
                           title="Read blog"
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.9 }}
                         >
                           <ExternalLink className="w-4 h-4" />
-                        </button>
+                        </motion.button>
                       )}
                     </div>
                   </div>
-                </div>
-              </article>
+                </motion.div>
+              </motion.article>
             ))}
           </div>
         )}

@@ -12,10 +12,26 @@ export function NotificationBadge({ userId, className = '' }: NotificationBadgeP
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<WebSocketNotification[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Get initial unread count
-    getUnreadCount();
+    // Initialize WebSocket and get unread count
+    const initializeNotifications = async () => {
+      try {
+        // Connect to WebSocket
+        await webSocketNotificationService.connect(userId);
+        setIsConnected(true);
+        
+        // Get initial unread count after connection
+        const count = await webSocketNotificationService.getUnreadCount();
+        setUnreadCount(count);
+      } catch (error) {
+        console.error('Error initializing notifications:', error);
+        setIsConnected(false);
+      }
+    };
+
+    initializeNotifications();
 
     // Listen for notifications
     const unsubscribeNotification = webSocketNotificationService.onNotification((notification) => {
@@ -31,13 +47,23 @@ export function NotificationBadge({ userId, className = '' }: NotificationBadgeP
       }
     });
 
+    // Listen for connection status changes
+    const unsubscribeStatus = webSocketNotificationService.onStatusChange((status) => {
+      setIsConnected(status === 'connected');
+    });
+
     return () => {
       unsubscribeNotification();
+      unsubscribeStatus();
     };
-  }, []);
+  }, [userId]);
 
   const getUnreadCount = async () => {
     try {
+      if (!isConnected) {
+        console.warn('WebSocket not connected, retrying...');
+        await webSocketNotificationService.connect(userId);
+      }
       const count = await webSocketNotificationService.getUnreadCount();
       setUnreadCount(count);
     } catch (error) {
