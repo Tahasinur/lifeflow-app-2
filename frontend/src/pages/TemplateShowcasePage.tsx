@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Download, Star, Users, Share2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface Template {
@@ -84,6 +85,7 @@ const DEMO_TEMPLATES: Template[] = [
 ];
 
 export function TemplateShowcasePage() {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const categories = ['All', 'Business', 'Finance', 'Content', 'Education', 'Events', 'Product'];
   
@@ -93,6 +95,10 @@ export function TemplateShowcasePage() {
 
   const handleUseTemplate = (template: Template) => {
     toast.success(`Template "${template.title}" added to your workspace!`);
+  };
+
+  const handleAuthorClick = (authorName: string) => {
+    navigate(`/user/${authorName}`);
   };
 
   return (
@@ -167,7 +173,13 @@ export function TemplateShowcasePage() {
                 {/* Author */}
                 <div className="mb-4 pb-4 border-b border-gray-200 dark:border-[#2F2F2F]">
                   <p className="text-xs text-gray-500 dark:text-gray-500">
-                    by <span className="text-[#37352F] dark:text-[#E3E3E3]">{template.author}</span>
+                    by{' '}
+                    <button
+                      onClick={() => handleAuthorClick(template.author)}
+                      className="text-[#37352F] dark:text-[#E3E3E3] hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors font-medium"
+                    >
+                      {template.author}
+                    </button>
                   </p>
                 </div>
 

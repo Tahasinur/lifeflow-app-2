@@ -1,5 +1,5 @@
 import SockJS from 'sockjs-client';
-import { Client, IFrame, Message, messageCallbackType, errCallbackType } from '@stomp/stompjs';
+import { Client, IFrame, Message, messageCallbackType } from '@stomp/stompjs';
 
 export interface WebSocketNotification {
   type: string;

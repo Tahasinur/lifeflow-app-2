@@ -11,6 +11,7 @@ import com.lifeflow.backend.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,34 +48,58 @@ public class FeedController {
     }
 
     @PostMapping
-    public FeedItem createPost(@RequestBody Map<String, Object> payload) {
-        FeedItem item = new FeedItem();
-        item.setTitle((String) payload.get("title"));
-        item.setDescription((String) payload.get("description"));
-        item.setType((String) payload.get("type"));
-        item.setSourcePageId((String) payload.get("sourcePageId"));
-        
-        @SuppressWarnings("unchecked")
-        List<String> tags = (List<String>) payload.get("tags");
-        item.setTags(tags);
+    public ResponseEntity<?> createPost(@RequestBody Map<String, Object> payload) {
+        try {
+            FeedItem item = new FeedItem();
+            
+            // Safely extract string fields
+            Object titleObj = payload.get("title");
+            item.setTitle(titleObj != null ? titleObj.toString() : "Untitled");
+            
+            Object descObj = payload.get("description");
+            item.setDescription(descObj != null ? descObj.toString() : "");
+            
+            Object typeObj = payload.get("type");
+            item.setType(typeObj != null ? typeObj.toString() : "blog");
+            
+            Object sourcePageObj = payload.get("sourcePageId");
+            item.setSourcePageId(sourcePageObj != null ? sourcePageObj.toString() : null);
+            
+            @SuppressWarnings("unchecked")
+            List<String> tags = (List<String>) payload.get("tags");
+            item.setTags(tags != null ? tags : new ArrayList<>());
 
-        String userId = (String) payload.get("userId");
-        if (userId != null) {
-            userRepository.findById(userId).ifPresent(item::setAuthor);
-        } else {
-            String authorName = (String) payload.getOrDefault("authorName", "Anonymous");
-            String authorEmail = (String) payload.getOrDefault("authorEmail", "anonymous@example.com");
-            User user = userRepository.findByEmail(authorEmail).orElseGet(() -> {
-                User newUser = new User();
-                newUser.setName(authorName);
-                newUser.setEmail(authorEmail);
-                newUser.setAvatar(authorName.substring(0, Math.min(2, authorName.length())).toUpperCase());
-                return userRepository.save(newUser);
-            });
-            item.setAuthor(user);
+            Object userIdObj = payload.get("userId");
+            String userId = null;
+            if (userIdObj != null) {
+                userId = userIdObj.toString();
+            }
+            User author = null;
+            
+            if (userId != null && !userId.isEmpty()) {
+                author = userRepository.findById(userId).orElse(null);
+            }
+            
+            if (author == null) {
+                String authorName = (String) payload.getOrDefault("authorName", "Anonymous");
+                String authorEmail = (String) payload.getOrDefault("authorEmail", "anonymous@example.com");
+                author = userRepository.findByEmail(authorEmail).orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setName(authorName);
+                    newUser.setEmail(authorEmail);
+                    newUser.setAvatar(authorName.substring(0, Math.min(2, authorName.length())).toUpperCase());
+                    newUser.setPassword(UUID.randomUUID().toString());
+                    return userRepository.save(newUser);
+                });
+            }
+            
+            item.setAuthor(author);
+            FeedItem savedItem = feedRepository.save(item);
+            return ResponseEntity.ok(savedItem);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to create post: " + e.getMessage()));
         }
-
-        return feedRepository.save(item);
     }
 
     @PostMapping("/{id}/like")

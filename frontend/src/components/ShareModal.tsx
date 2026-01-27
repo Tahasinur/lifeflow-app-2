@@ -136,7 +136,7 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'X-User-Id': user.id
+          'X-User-Id': String(user.id)
         },
         body: JSON.stringify({
           title,
@@ -144,7 +144,7 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
           type: postType,
           sourcePageId: selectedPageId || null,
           tags,
-          userId: user.id
+          userId: String(user.id)
         })
       });
 
@@ -256,8 +256,7 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
             <select
               value={postType}
               onChange={(e) => setPostType(e.target.value as any)}
-              disabled={isPageLocked}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[#3F3F3F] rounded-lg bg-white dark:bg-[#191919] text-[#37352F] dark:text-[#E3E3E3] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#3F3F3F] rounded-lg bg-white dark:bg-[#191919] text-[#37352F] dark:text-[#E3E3E3] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="template">Template</option>
               <option value="blog">Blog Post</option>

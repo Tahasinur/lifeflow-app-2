@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MessageCircle, Share2, Heart, Search } from 'lucide-react';
+import { MessageCircle, Heart, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface BlogPost {
@@ -108,8 +109,10 @@ const DEMO_BLOGS: BlogPost[] = [
 ];
 
 export function BlogShowcasePage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const categories = ['All', 'Guide', 'Tips', 'Best Practices', 'Security', 'Community'];
   
   const filteredPosts = DEMO_BLOGS.filter(post => {
@@ -125,6 +128,28 @@ export function BlogShowcasePage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const handleAuthorClick = (authorName: string) => {
+    navigate(`/user/${authorName}`);
+  };
+
+  const handleReadBlog = (post: BlogPost) => {
+    toast.info(`Opening "${post.title}"...`);
+    // You can navigate to a blog detail page if needed: navigate(`/blog/${post.id}`)
+  };
+
+  const handleLikeBlog = (postId: string) => {
+    setLikedPosts(prev => {
+      const newLiked = new Set(prev);
+      if (newLiked.has(postId)) {
+        newLiked.delete(postId);
+      } else {
+        newLiked.add(postId);
+      }
+      return newLiked;
+    });
+    toast.success('Liked!');
   };
 
   return (
@@ -161,9 +186,9 @@ export function BlogShowcasePage() {
                       {formatDate(post.date)}
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2">
-                    {post.title}
-                  </h3>
+                    <h3 className="text-xl font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                      {post.title}
+                    </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
                     {post.excerpt}
                   </p>
@@ -173,9 +198,12 @@ export function BlogShowcasePage() {
                         {post.authorAvatar}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3]">
+                        <button
+                          onClick={() => handleAuthorClick(post.author)}
+                          className="text-sm font-medium text-[#37352F] dark:text-[#E3E3E3] hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors"
+                        >
                           {post.author}
-                        </p>
+                        </button>
                         <p className="text-xs text-gray-500 dark:text-gray-500">
                           {post.readTime} min read
                         </p>
@@ -183,8 +211,15 @@ export function BlogShowcasePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <button className="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                      <Heart className="w-4 h-4" />
+                    <button
+                      onClick={() => handleLikeBlog(post.id)}
+                      className={`flex items-center gap-1 transition-colors ${
+                        likedPosts.has(post.id)
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'hover:text-red-600 dark:hover:text-red-400'
+                      }`}
+                    >
+                      <Heart className="w-4 h-4" fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
                       <span>{post.likes}</span>
                     </button>
                     <button className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -192,11 +227,10 @@ export function BlogShowcasePage() {
                       <span>{post.comments}</span>
                     </button>
                     <button
-                      onClick={() => toast.info('Read full article')}
-                      className="ml-auto flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      onClick={() => handleReadBlog(post)}
+                      className="ml-auto flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-3 py-1 hover:bg-blue-50 dark:hover:bg-[#2F2F2F] rounded"
                     >
-                      <Share2 className="w-4 h-4" />
-                      <span>Read</span>
+                      <span>Read Article</span>
                     </button>
                   </div>
                 </article>
@@ -259,9 +293,12 @@ export function BlogShowcasePage() {
                         {formatDate(post.date)}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                    <button
+                      onClick={() => handleReadBlog(post)}
+                      className="text-lg font-bold text-[#37352F] dark:text-[#E3E3E3] mb-2 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors text-left"
+                    >
                       {post.title}
-                    </h3>
+                    </button>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                       {post.excerpt}
                     </p>
@@ -269,9 +306,12 @@ export function BlogShowcasePage() {
                       <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">
                         {post.authorAvatar}
                       </div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <button
+                        onClick={() => handleAuthorClick(post.author)}
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors"
+                      >
                         {post.author}
-                      </span>
+                      </button>
                       <span className="text-xs text-gray-500 dark:text-gray-500">
                         • {post.readTime} min read
                       </span>
@@ -288,8 +328,15 @@ export function BlogShowcasePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 sm:flex-col sm:items-end">
-                    <button className="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                      <Heart className="w-4 h-4" />
+                    <button
+                      onClick={() => handleLikeBlog(post.id)}
+                      className={`flex items-center gap-1 transition-colors ${
+                        likedPosts.has(post.id)
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'hover:text-red-600 dark:hover:text-red-400'
+                      }`}
+                    >
+                      <Heart className="w-4 h-4" fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
                       <span className="hidden sm:inline">{post.likes}</span>
                     </button>
                     <button className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
