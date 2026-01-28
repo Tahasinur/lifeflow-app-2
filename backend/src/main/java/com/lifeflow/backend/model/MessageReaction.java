@@ -15,7 +15,7 @@ public class MessageReaction {
     private Message message;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(name = "emoji", nullable = false)
     private String emoji;
@@ -26,7 +26,7 @@ public class MessageReaction {
     public MessageReaction() {
     }
 
-    public MessageReaction(Message message, Long userId, String emoji) {
+    public MessageReaction(Message message, String userId, String emoji) {
         this.message = message;
         this.userId = userId;
         this.emoji = emoji;
@@ -49,11 +49,11 @@ public class MessageReaction {
         this.message = message;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

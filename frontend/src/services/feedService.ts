@@ -1,6 +1,6 @@
 import { FeedItem } from '../types';
 
-const API_URL = 'http://localhost:8080/api/feed';
+const API_URL = '/api/feed';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('lifeflow-token');

@@ -6,6 +6,7 @@ import { FeedItem } from '../types';
 import { FollowButton } from '../components/FollowButton';
 import { followService } from '../services/followService';
 import { webSocketNotificationService } from '../services/webSocketNotificationService';
+import { messagingService } from '../services/messagingService';
 
 interface UserProfile {
   id: string;
@@ -19,16 +20,144 @@ export function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [user, setUser] = useState<UserProfile | null>(null);
-  // ... existing state ...
+  const [templates, setTemplates] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
 
-  // ... loadUserProfile and other methods ...
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!userId) return;
 
-  const handleMessageUser = () => {
-    if (!user || !user.email) {
-       toast.error("Cannot message this user (email hidden)");
-       return;
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('lifeflow-token');
+
+        // Get current user info
+        const currentUser = localStorage.getItem('lifeflow-user');
+        if (currentUser) {
+          try {
+            const userData = JSON.parse(currentUser);
+            setCurrentUserId(userData.id);
+          } catch (e) {
+            console.error('Error parsing user data:', e);
+          }
+        }
+
+        // Fetch user profile
+        const userResponse = await fetch(`/api/users/${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (!userResponse.ok) {
+          throw new Error('Failed to load user profile');
+        }
+
+        const userData = await userResponse.json();
+        setUser(userData);
+
+        // Fetch user's templates
+        const templatesResponse = await fetch(`/api/users/${userId}/templates`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (templatesResponse.ok) {
+          const templatesData = await templatesResponse.json();
+          setTemplates(templatesData);
+        }
+
+        // Fetch follower/following counts
+        if (token) {
+          const followerResponse = await fetch(`/api/follow/${userId}/followers`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (followerResponse.ok) {
+            const followers = await followerResponse.json();
+            setFollowerCount(followers.length);
+          }
+
+          const followingResponse = await fetch(`/api/follow/${userId}/following`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (followingResponse.ok) {
+            const following = await followingResponse.json();
+            setFollowingCount(following.length);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        toast.error('Failed to load user profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserProfile();
+  }, [userId]);
+
+  const toggleLike = async (itemId: string) => {
+    try {
+      const token = localStorage.getItem('lifeflow-token');
+      if (!token) {
+        toast.error('Please login to like posts');
+        return;
+      }
+
+      const response = await fetch(`/api/feed/${itemId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to like post');
+      }
+
+      const data = await response.json();
+
+      // Update liked items set and template likes count
+      setLikedItems((prev) => {
+        const newSet = new Set(prev);
+        if (data.isLiked) {
+          newSet.add(itemId);
+        } else {
+          newSet.delete(itemId);
+        }
+        return newSet;
+      });
+
+      setTemplates((prevTemplates) =>
+        prevTemplates.map((template) =>
+          template.id === itemId ? { ...template, likes: data.likes } : template
+        )
+      );
+    } catch (err) {
+      console.error('Error toggling like:', err);
+      toast.error('Failed to update like');
     }
-    navigate(`/dashboard/inbox?createDirect=${encodeURIComponent(user.email)}`);
+  };
+
+  const handleMessageUser = async () => {
+    if (!user) {
+      toast.error("User not found");
+      return;
+    }
+
+    try {
+      // Directly create or get direct conversation
+      const conversation = await messagingService.createDirectConversation(user.id);
+      toast.success(`Opening chat with ${user.name}`);
+      
+      // Navigate directly to inbox with this conversation selected
+      navigate(`/dashboard/inbox?conversation=${conversation.id}`);
+    } catch (err) {
+      console.error('Error creating conversation:', err);
+      toast.error('Failed to open chat');
+    }
   };
 
   const cloneTemplate = (item: FeedItem) => {

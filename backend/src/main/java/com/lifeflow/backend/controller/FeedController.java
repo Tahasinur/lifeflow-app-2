@@ -188,7 +188,11 @@ public class FeedController {
                 Optional<Page> pageOpt = pageRepository.findById(item.getSourcePageId());
                 if (pageOpt.isPresent()) {
                     Page page = pageOpt.get();
-                    itemData.put("content", page.getBlocksJson());
+                    String content = page.getEditorContentJson();
+                    if (content == null || content.trim().isEmpty() || "null".equals(content) || "[]".equals(content)) {
+                        content = page.getBlocksJson();
+                    }
+                    itemData.put("content", content);
                     itemData.put("icon", page.getIcon());
                     itemData.put("coverImage", page.getCoverImage());
                 }

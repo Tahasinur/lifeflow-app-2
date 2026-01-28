@@ -17,7 +17,7 @@ export interface NotificationSubscription {
 
 class WebSocketNotificationService {
   private client: Client | null = null;
-  private wsUrl = 'http://localhost:8080/ws';
+  private wsUrl = `${window.location.protocol}//${window.location.hostname}:8080/ws`;
   private connectionPromise: Promise<void> | null = null;
   private notificationCallbacks: Set<(notification: WebSocketNotification) => void> = new Set();
   private statusCallbacks: Set<(status: 'connected' | 'disconnected' | 'error') => void> = new Set();

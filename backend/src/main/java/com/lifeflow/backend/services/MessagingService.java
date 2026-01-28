@@ -38,21 +38,21 @@ public class MessagingService {
 
     // CONVERSATION OPERATIONS
 
-    public List<ConversationDTO> getConversations(Long userId) {
+    public List<ConversationDTO> getConversations(String userId) {
         List<Conversation> conversations = conversationRepository.findByUserId(userId);
         return conversations.stream()
                 .map(this::convertToConversationDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<ConversationPreviewDTO> getConversationPreviews(Long userId) {
+    public List<ConversationPreviewDTO> getConversationPreviews(String userId) {
         List<Conversation> conversations = conversationRepository.findByUserId(userId);
         return conversations.stream()
                 .map(this::convertToPreviewDTO)
                 .collect(Collectors.toList());
     }
 
-    public ConversationDTO getConversation(String conversationId, Long userId) {
+    public ConversationDTO getConversation(String conversationId, String userId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
@@ -62,7 +62,7 @@ public class MessagingService {
         return convertToConversationDTO(conversation);
     }
 
-    public ConversationDTO createDirectConversation(Long userId, Long targetUserId) {
+    public ConversationDTO createDirectConversation(String userId, String targetUserId) {
         // Check if direct conversation already exists
         Conversation existing = conversationRepository.findDirectConversation(userId, targetUserId);
         if (existing != null) {
@@ -79,24 +79,25 @@ public class MessagingService {
         return convertToConversationDTO(saved);
     }
 
-    public ConversationDTO createGroupConversation(String name, String description, List<Long> participantIds, Long creatorId) {
+    public ConversationDTO createGroupConversation(String name, String description, List<String> participantIds,
+            String creatorId) {
         Conversation conversation = new Conversation("group", creatorId);
         conversation.setName(name);
         conversation.setDescription(description);
         Conversation saved = conversationRepository.save(conversation);
 
         // Add all participants including creator
-        Set<Long> allParticipants = new HashSet<>(participantIds);
+        Set<String> allParticipants = new HashSet<>(participantIds);
         allParticipants.add(creatorId);
 
-        for (Long participantId : allParticipants) {
+        for (String participantId : allParticipants) {
             participantRepository.save(new ConversationParticipant(saved, participantId));
         }
 
         return convertToConversationDTO(saved);
     }
 
-    public ConversationDTO updateConversation(String conversationId, Long userId, ConversationDTO updates) {
+    public ConversationDTO updateConversation(String conversationId, String userId, ConversationDTO updates) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
@@ -121,7 +122,7 @@ public class MessagingService {
         return convertToConversationDTO(saved);
     }
 
-    public void archiveConversation(String conversationId, Long userId) {
+    public void archiveConversation(String conversationId, String userId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
@@ -132,7 +133,7 @@ public class MessagingService {
         conversationRepository.save(conversation);
     }
 
-    public void deleteConversation(String conversationId, Long userId) {
+    public void deleteConversation(String conversationId, String userId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
@@ -143,7 +144,7 @@ public class MessagingService {
 
     // MESSAGE OPERATIONS
 
-    public List<MessageDTO> getMessages(String conversationId, Long userId, int limit, int offset) {
+    public List<MessageDTO> getMessages(String conversationId, String userId, int limit, int offset) {
         verifyUserIsParticipant(conversationId, userId);
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
@@ -154,7 +155,7 @@ public class MessagingService {
                 .collect(Collectors.toList());
     }
 
-    public MessageDTO sendMessage(String conversationId, Long userId, String content) {
+    public MessageDTO sendMessage(String conversationId, String userId, String content) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
@@ -181,7 +182,7 @@ public class MessagingService {
         return convertToMessageDTO(saved);
     }
 
-    public MessageDTO editMessage(String conversationId, String messageId, Long userId, String newContent) {
+    public MessageDTO editMessage(String conversationId, String messageId, String userId, String newContent) {
         verifyUserIsParticipant(conversationId, userId);
 
         Message message = messageRepository.findById(messageId)
@@ -199,7 +200,7 @@ public class MessagingService {
         return convertToMessageDTO(updated);
     }
 
-    public void deleteMessage(String conversationId, String messageId, Long userId) {
+    public void deleteMessage(String conversationId, String messageId, String userId) {
         verifyUserIsParticipant(conversationId, userId);
 
         Message message = messageRepository.findById(messageId)
@@ -212,7 +213,7 @@ public class MessagingService {
         messageRepository.delete(message);
     }
 
-    public void markAsRead(String conversationId, Long userId) {
+    public void markAsRead(String conversationId, String userId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
@@ -232,13 +233,14 @@ public class MessagingService {
 
     // REACTION OPERATIONS
 
-    public MessageDTO addReaction(String conversationId, String messageId, Long userId, String emoji) {
+    public MessageDTO addReaction(String conversationId, String messageId, String userId, String emoji) {
         verifyUserIsParticipant(conversationId, userId);
 
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
 
-        Optional<MessageReaction> existing = reactionRepository.findByMessageIdAndUserIdAndEmoji(messageId, userId, emoji);
+        Optional<MessageReaction> existing = reactionRepository.findByMessageIdAndUserIdAndEmoji(messageId, userId,
+                emoji);
 
         if (existing.isEmpty()) {
             MessageReaction reaction = new MessageReaction(message, userId, emoji);
@@ -249,10 +251,11 @@ public class MessagingService {
         return convertToMessageDTO(updated);
     }
 
-    public MessageDTO removeReaction(String conversationId, String messageId, Long userId, String emoji) {
+    public MessageDTO removeReaction(String conversationId, String messageId, String userId, String emoji) {
         verifyUserIsParticipant(conversationId, userId);
 
-        Optional<MessageReaction> reaction = reactionRepository.findByMessageIdAndUserIdAndEmoji(messageId, userId, emoji);
+        Optional<MessageReaction> reaction = reactionRepository.findByMessageIdAndUserIdAndEmoji(messageId, userId,
+                emoji);
 
         if (reaction.isPresent()) {
             reactionRepository.delete(reaction.get());
@@ -265,7 +268,7 @@ public class MessagingService {
 
     // SEARCH
 
-    public List<MessageDTO> searchMessages(Long userId, String query, String conversationId) {
+    public List<MessageDTO> searchMessages(String userId, String query, String conversationId) {
         List<Message> results;
 
         if (conversationId != null && !conversationId.isEmpty()) {
@@ -282,7 +285,7 @@ public class MessagingService {
 
     // STATS
 
-    public InboxStatsDTO getInboxStats(Long userId) {
+    public InboxStatsDTO getInboxStats(String userId) {
         List<Conversation> conversations = conversationRepository.findByUserId(userId);
 
         int totalUnread = 0;
@@ -298,8 +301,9 @@ public class MessagingService {
 
     // HELPER METHODS
 
-    private void verifyUserIsParticipant(String conversationId, Long userId) {
-        Optional<ConversationParticipant> participant = participantRepository.findByConversationIdAndUserId(conversationId, userId);
+    private void verifyUserIsParticipant(String conversationId, String userId) {
+        Optional<ConversationParticipant> participant = participantRepository
+                .findByConversationIdAndUserId(conversationId, userId);
         if (participant.isEmpty()) {
             throw new RuntimeException("User is not a participant of this conversation");
         }
@@ -312,7 +316,7 @@ public class MessagingService {
         dto.setName(conversation.getName());
         dto.setDescription(conversation.getDescription());
         dto.setAvatar(conversation.getAvatar());
-        dto.setCreatorId(String.valueOf(conversation.getCreatorId()));
+        dto.setCreatorId(conversation.getCreatorId());
         dto.setIsArchived(conversation.getIsArchived());
         dto.setCreatedAt(conversation.getCreatedAt());
         dto.setUpdatedAt(conversation.getUpdatedAt());
@@ -353,7 +357,7 @@ public class MessagingService {
                     .orElse(null);
             if (lastMsg != null) {
                 dto.setLastMessage(lastMsg.getContent());
-                dto.setLastMessageAuthor(String.valueOf(lastMsg.getSenderId()));
+                dto.setLastMessageAuthor(lastMsg.getSenderId());
                 dto.setLastMessageTime(lastMsg.getCreatedAt().toString());
             }
         }
@@ -365,7 +369,7 @@ public class MessagingService {
         MessageDTO dto = new MessageDTO();
         dto.setId(message.getId());
         dto.setConversationId(message.getConversation().getId());
-        dto.setSenderId(String.valueOf(message.getSenderId()));
+        dto.setSenderId(message.getSenderId());
         dto.setContent(message.getContent());
         dto.setCreatedAt(message.getCreatedAt());
         dto.setUpdatedAt(message.getUpdatedAt());
@@ -377,7 +381,7 @@ public class MessagingService {
                     MessageReactionDTO rDto = new MessageReactionDTO();
                     rDto.setId(r.getId());
                     rDto.setMessageId(r.getMessage().getId());
-                    rDto.setUserId(String.valueOf(r.getUserId()));
+                    rDto.setUserId(r.getUserId());
                     rDto.setEmoji(r.getEmoji());
                     rDto.setCreatedAt(r.getCreatedAt());
                     return rDto;
@@ -404,10 +408,10 @@ public class MessagingService {
         return dto;
     }
 
-    private ChatUserDTO convertToChatUserDTO(Long userId) {
+    private ChatUserDTO convertToChatUserDTO(String userId) {
         // In a real implementation, fetch user from User repository
         ChatUserDTO dto = new ChatUserDTO();
-        dto.setId(String.valueOf(userId));
+        dto.setId(userId);
         dto.setStatus("online");
         return dto;
     }

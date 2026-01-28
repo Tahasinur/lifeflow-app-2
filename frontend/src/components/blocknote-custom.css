@@ -450,3 +450,16 @@
 .dark .bn-divider {
   border-color: #3f3f3f !important;
 }
+
+/* Read-only wrapper for blog posts/feeds */
+.blocknote-wrapper-readonly {
+  width: 100%;
+  display: block; /* Allow content to dictate height */
+  /* No fixed height */
+}
+
+/* Adjust padding for read-only view if needed */
+.blocknote-wrapper-readonly .bn-editor {
+  padding-top: 0; /* Header handles top spacing */
+  padding-bottom: 0;
+}

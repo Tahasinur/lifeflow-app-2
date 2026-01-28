@@ -15,7 +15,7 @@ public class ConversationRead {
     private Conversation conversation;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(name = "last_read_at", nullable = false)
     private LocalDateTime lastReadAt = LocalDateTime.now();
@@ -23,7 +23,7 @@ public class ConversationRead {
     public ConversationRead() {
     }
 
-    public ConversationRead(Conversation conversation, Long userId) {
+    public ConversationRead(Conversation conversation, String userId) {
         this.conversation = conversation;
         this.userId = userId;
     }
@@ -45,11 +45,11 @@ public class ConversationRead {
         this.conversation = conversation;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

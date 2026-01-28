@@ -15,7 +15,7 @@ public class ConversationParticipant {
     private Conversation conversation;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt = LocalDateTime.now();
@@ -29,7 +29,7 @@ public class ConversationParticipant {
     public ConversationParticipant() {
     }
 
-    public ConversationParticipant(Conversation conversation, Long userId) {
+    public ConversationParticipant(Conversation conversation, String userId) {
         this.conversation = conversation;
         this.userId = userId;
     }
@@ -51,11 +51,11 @@ public class ConversationParticipant {
         this.conversation = conversation;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

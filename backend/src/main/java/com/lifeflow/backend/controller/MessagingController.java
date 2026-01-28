@@ -1,7 +1,10 @@
 package com.lifeflow.backend.controller;
 
 import com.lifeflow.backend.dto.*;
+import com.lifeflow.backend.model.User;
+import com.lifeflow.backend.repository.UserRepository;
 import com.lifeflow.backend.services.MessagingService;
+import com.lifeflow.backend.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,16 +14,31 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/messages")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000", "http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:5000", "http://localhost:5173" })
 public class MessagingController {
 
     @Autowired
     private MessagingService messagingService;
 
-    // Extract userId from JWT token (simplified)
-    private Long getUserIdFromToken() {
-        // In a real implementation, extract from JWT token
-        return 1L; // Default for testing
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    // Extract userId from JWT token
+    private String getUserIdFromToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing or invalid Authorization header");
+        }
+
+        String token = authHeader.substring(7);
+        String email = jwtTokenProvider.getEmailFromToken(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getId();
     }
 
     // CONVERSATION ENDPOINTS (8 total)
@@ -30,8 +48,8 @@ public class MessagingController {
      * Get all conversations for current user
      */
     @GetMapping("/conversations")
-    public ResponseEntity<List<ConversationDTO>> getConversations() {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<List<ConversationDTO>> getConversations(@RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         List<ConversationDTO> conversations = messagingService.getConversations(userId);
         return ResponseEntity.ok(conversations);
     }
@@ -41,8 +59,9 @@ public class MessagingController {
      * Get conversation previews
      */
     @GetMapping("/conversations/preview")
-    public ResponseEntity<List<ConversationPreviewDTO>> getConversationPreviews() {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<List<ConversationPreviewDTO>> getConversationPreviews(
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         List<ConversationPreviewDTO> previews = messagingService.getConversationPreviews(userId);
         return ResponseEntity.ok(previews);
     }
@@ -52,8 +71,10 @@ public class MessagingController {
      * Get specific conversation by ID
      */
     @GetMapping("/conversations/{conversationId}")
-    public ResponseEntity<ConversationDTO> getConversation(@PathVariable String conversationId) {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<ConversationDTO> getConversation(
+            @PathVariable String conversationId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         ConversationDTO conversation = messagingService.getConversation(conversationId, userId);
         return ResponseEntity.ok(conversation);
     }
@@ -64,9 +85,10 @@ public class MessagingController {
      */
     @PostMapping("/conversations/direct")
     public ResponseEntity<ConversationDTO> createDirectConversation(
-            @RequestBody CreateDirectConversationRequest request) {
-        Long userId = getUserIdFromToken();
-        Long targetUserId = Long.parseLong(request.getUserId());
+            @RequestBody CreateDirectConversationRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
+        String targetUserId = request.getUserId();
         ConversationDTO conversation = messagingService.createDirectConversation(userId, targetUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(conversation);
     }
@@ -77,17 +99,15 @@ public class MessagingController {
      */
     @PostMapping("/conversations/group")
     public ResponseEntity<ConversationDTO> createGroupConversation(
-            @RequestBody CreateGroupConversationRequest request) {
-        Long userId = getUserIdFromToken();
-        List<Long> participantIds = request.getParticipantIds().stream()
-                .map(Long::parseLong)
-                .toList();
+            @RequestBody CreateGroupConversationRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
+        List<String> participantIds = request.getParticipantIds();
         ConversationDTO conversation = messagingService.createGroupConversation(
                 request.getName(),
                 request.getDescription(),
                 participantIds,
-                userId
-        );
+                userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(conversation);
     }
 
@@ -98,8 +118,9 @@ public class MessagingController {
     @PatchMapping("/conversations/{conversationId}")
     public ResponseEntity<ConversationDTO> updateConversation(
             @PathVariable String conversationId,
-            @RequestBody ConversationDTO updates) {
-        Long userId = getUserIdFromToken();
+            @RequestBody ConversationDTO updates,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         ConversationDTO updated = messagingService.updateConversation(conversationId, userId, updates);
         return ResponseEntity.ok(updated);
     }
@@ -109,8 +130,10 @@ public class MessagingController {
      * Archive conversation
      */
     @PostMapping("/conversations/{conversationId}/archive")
-    public ResponseEntity<Void> archiveConversation(@PathVariable String conversationId) {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<Void> archiveConversation(
+            @PathVariable String conversationId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         messagingService.archiveConversation(conversationId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -120,8 +143,10 @@ public class MessagingController {
      * Delete conversation
      */
     @DeleteMapping("/conversations/{conversationId}")
-    public ResponseEntity<Void> deleteConversation(@PathVariable String conversationId) {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<Void> deleteConversation(
+            @PathVariable String conversationId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         messagingService.deleteConversation(conversationId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -136,8 +161,9 @@ public class MessagingController {
     public ResponseEntity<List<MessageDTO>> getMessages(
             @PathVariable String conversationId,
             @RequestParam(defaultValue = "50") int limit,
-            @RequestParam(defaultValue = "0") int offset) {
-        Long userId = getUserIdFromToken();
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         List<MessageDTO> messages = messagingService.getMessages(conversationId, userId, limit, offset);
         return ResponseEntity.ok(messages);
     }
@@ -149,35 +175,40 @@ public class MessagingController {
     @PostMapping("/conversations/{conversationId}/messages")
     public ResponseEntity<MessageDTO> sendMessage(
             @PathVariable String conversationId,
-            @RequestBody SendMessageRequest request) {
-        Long userId = getUserIdFromToken();
+            @RequestBody SendMessageRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         MessageDTO message = messagingService.sendMessage(conversationId, userId, request.getContent());
         return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
 
     /**
-     * Endpoint 11: PATCH /api/messages/conversations/:conversationId/messages/:messageId
+     * Endpoint 11: PATCH
+     * /api/messages/conversations/:conversationId/messages/:messageId
      * Edit message
      */
     @PatchMapping("/conversations/{conversationId}/messages/{messageId}")
     public ResponseEntity<MessageDTO> editMessage(
             @PathVariable String conversationId,
             @PathVariable String messageId,
-            @RequestBody SendMessageRequest request) {
-        Long userId = getUserIdFromToken();
+            @RequestBody SendMessageRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         MessageDTO message = messagingService.editMessage(conversationId, messageId, userId, request.getContent());
         return ResponseEntity.ok(message);
     }
 
     /**
-     * Endpoint 12: DELETE /api/messages/conversations/:conversationId/messages/:messageId
+     * Endpoint 12: DELETE
+     * /api/messages/conversations/:conversationId/messages/:messageId
      * Delete message
      */
     @DeleteMapping("/conversations/{conversationId}/messages/{messageId}")
     public ResponseEntity<Void> deleteMessage(
             @PathVariable String conversationId,
-            @PathVariable String messageId) {
-        Long userId = getUserIdFromToken();
+            @PathVariable String messageId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         messagingService.deleteMessage(conversationId, messageId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -187,8 +218,10 @@ public class MessagingController {
      * Mark conversation as read
      */
     @PostMapping("/conversations/{conversationId}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable String conversationId) {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<Void> markAsRead(
+            @PathVariable String conversationId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         messagingService.markAsRead(conversationId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -196,29 +229,33 @@ public class MessagingController {
     // REACTION ENDPOINTS (2 total)
 
     /**
-     * Endpoint 14: POST /api/messages/conversations/:conversationId/messages/:messageId/reactions
+     * Endpoint 14: POST
+     * /api/messages/conversations/:conversationId/messages/:messageId/reactions
      * Add reaction to message
      */
     @PostMapping("/conversations/{conversationId}/messages/{messageId}/reactions")
     public ResponseEntity<MessageDTO> addReaction(
             @PathVariable String conversationId,
             @PathVariable String messageId,
-            @RequestBody AddReactionRequest request) {
-        Long userId = getUserIdFromToken();
+            @RequestBody AddReactionRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         MessageDTO message = messagingService.addReaction(conversationId, messageId, userId, request.getEmoji());
         return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
 
     /**
-     * Endpoint 15: DELETE /api/messages/conversations/:conversationId/messages/:messageId/reactions/:emoji
+     * Endpoint 15: DELETE
+     * /api/messages/conversations/:conversationId/messages/:messageId/reactions/:emoji
      * Remove reaction from message
      */
     @DeleteMapping("/conversations/{conversationId}/messages/{messageId}/reactions/{emoji}")
     public ResponseEntity<MessageDTO> removeReaction(
             @PathVariable String conversationId,
             @PathVariable String messageId,
-            @PathVariable String emoji) {
-        Long userId = getUserIdFromToken();
+            @PathVariable String emoji,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         MessageDTO message = messagingService.removeReaction(conversationId, messageId, userId, emoji);
         return ResponseEntity.ok(message);
     }
@@ -230,8 +267,8 @@ public class MessagingController {
      * Get inbox stats
      */
     @GetMapping("/stats")
-    public ResponseEntity<InboxStatsDTO> getInboxStats() {
-        Long userId = getUserIdFromToken();
+    public ResponseEntity<InboxStatsDTO> getInboxStats(@RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         InboxStatsDTO stats = messagingService.getInboxStats(userId);
         return ResponseEntity.ok(stats);
     }
@@ -245,8 +282,9 @@ public class MessagingController {
     @GetMapping("/search")
     public ResponseEntity<List<MessageDTO>> searchMessages(
             @RequestParam(name = "q") String query,
-            @RequestParam(required = false) String conversationId) {
-        Long userId = getUserIdFromToken();
+            @RequestParam(required = false) String conversationId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = getUserIdFromToken(authHeader);
         List<MessageDTO> results = messagingService.searchMessages(userId, query, conversationId);
         return ResponseEntity.ok(results);
     }

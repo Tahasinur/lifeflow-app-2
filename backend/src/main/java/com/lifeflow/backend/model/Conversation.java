@@ -25,7 +25,7 @@ public class Conversation {
     private String avatar;
 
     @Column(name = "creator_id")
-    private Long creatorId;
+    private String creatorId;
 
     @Column(name = "is_archived", nullable = false)
     private Boolean isArchived = false;
@@ -51,7 +51,7 @@ public class Conversation {
     public Conversation() {
     }
 
-    public Conversation(String type, Long creatorId) {
+    public Conversation(String type, String creatorId) {
         this.type = type;
         this.creatorId = creatorId;
     }
@@ -97,11 +97,11 @@ public class Conversation {
         this.avatar = avatar;
     }
 
-    public Long getCreatorId() {
+    public String getCreatorId() {
         return creatorId;
     }
 
-    public void setCreatorId(Long creatorId) {
+    public void setCreatorId(String creatorId) {
         this.creatorId = creatorId;
     }
 

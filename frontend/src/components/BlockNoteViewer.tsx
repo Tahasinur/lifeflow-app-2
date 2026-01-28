@@ -13,8 +13,7 @@ export function BlockNoteViewer({ content }: BlockNoteViewerProps) {
   // Memoize initial content to prevent unnecessary re-creations
   const initialContent = useMemo(() => {
     try {
-      // If content is falsy, return undefined to show empty editor (or maybe nothing?)
-      // Actually, if it's undefined, BlockNote creates an empty doc.
+      // If content is falsy, return undefined to show empty editor
       if (!content) return undefined;
       
       // Parse if string, otherwise use as is
@@ -43,6 +42,8 @@ export function BlockNoteViewer({ content }: BlockNoteViewerProps) {
         editor={editor}
         editable={false}
         theme="dark" // or dynamic based on app theme
+        slashMenu={false}
+        sideMenu={false}
       />
     </div>
   );

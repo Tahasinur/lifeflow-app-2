@@ -14,5 +14,5 @@ public interface ConversationParticipantRepository extends JpaRepository<Convers
     List<ConversationParticipant> findByConversationId(String conversationId);
 
     @Query("SELECT cp FROM ConversationParticipant cp WHERE cp.conversation.id = ?1 AND cp.userId = ?2")
-    Optional<ConversationParticipant> findByConversationIdAndUserId(String conversationId, Long userId);
+    Optional<ConversationParticipant> findByConversationIdAndUserId(String conversationId, String userId);
 }

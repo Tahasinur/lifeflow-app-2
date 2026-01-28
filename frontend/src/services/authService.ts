@@ -1,6 +1,6 @@
 import { AuthRequest, AuthResponse } from '../types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 export const authService = {
   async register(email: string, password: string, name: string): Promise<AuthResponse> {

@@ -1,7 +1,7 @@
 import { User } from '../types';
 import authService from './authService';
 
-const API_BASE_URL = 'http://localhost:8080/api/admin';
+const API_BASE_URL = '/api/admin';
 
 export const adminService = {
   async getAllUsers(): Promise<User[]> {

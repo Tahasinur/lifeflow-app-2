@@ -1,0 +1,121 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< com.lifeflow:backend >------------------------
+[INFO] Building backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.0:clean (default-clean) @ backend ---
+[INFO] Deleting C:\Users\tahas\OneDrive\Documents\GitHub\lifeflow-app-2\backend\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 80 source files with javac [debug parameters release 19] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/security/JwtTokenProvider.java: C:\Users\tahas\OneDrive\Documents\GitHub\lifeflow-app-2\backend\src\main\java\com\lifeflow\backend\security\JwtTokenProvider.java uses or overrides a deprecated API.
+[INFO] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/security/JwtTokenProvider.java: Recompile with -Xlint:deprecation for details.
+[INFO] Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/Teamspace.java:[38,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/WorkspaceSettings.java:[39,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/WorkspaceSettings.java:[42,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/WorkspaceSettings.java:[43,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/Follow.java:[39,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/User.java:[40,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/UserPreferences.java:[30,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/UserPreferences.java:[34,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/UserPreferences.java:[37,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/UserPreferences.java:[40,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/UserPreferences.java:[43,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/Notification.java:[51,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] 12 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/ChatWebSocketController.java:[44,79] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[92,35] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[93,75] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[221,108] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[241,109] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[255,109] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[290,106] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[302,125] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/ConversationRead.java:[49,16] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/MessageReaction.java:[53,16] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[52,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[64,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[77,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[90,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[91,45] incompatible types: long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[104,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[107,24] incompatible types: java.util.List<java.lang.Long> cannot be converted to java.util.List<java.lang.String>
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[125,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[138,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[151,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[168,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[182,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[198,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[213,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[226,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[244,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[260,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[273,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[289,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[INFO] 29 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.115 s
+[INFO] Finished at: 2026-01-28T11:10:23+06:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project backend: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/ChatWebSocketController.java:[44,79] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[92,35] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[93,75] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[221,108] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[241,109] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[255,109] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[290,106] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/services/MessagingService.java:[302,125] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/ConversationRead.java:[49,16] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/model/MessageReaction.java:[53,16] incompatible types: java.lang.String cannot be converted to java.lang.Long
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[52,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[64,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[77,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[90,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[91,45] incompatible types: long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[104,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[107,24] incompatible types: java.util.List<java.lang.Long> cannot be converted to java.util.List<java.lang.String>
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[125,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[138,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[151,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[168,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[182,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[198,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[213,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[226,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[244,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[260,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[273,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] /C:/Users/tahas/OneDrive/Documents/GitHub/lifeflow-app-2/backend/src/main/java/com/lifeflow/backend/controller/MessagingController.java:[289,43] incompatible types: java.lang.Long cannot be converted to java.lang.String
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

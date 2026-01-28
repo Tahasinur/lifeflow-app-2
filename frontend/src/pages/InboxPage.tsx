@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner';
 import { Conversation, ConversationPreview, Message, ChatUser } from '../types';
 import { messagingService } from '../services/messagingService';
+import { useChatWebSocket } from '../hooks/useChatWebSocket';
 
 export function InboxPage() {
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
@@ -33,8 +34,23 @@ export function InboxPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [initialRecipientEmail, setInitialRecipientEmail] = useState('');
+  
+  // Initialize WebSocket for real-time messaging
+  const { isConnected, subscribeToConversation } = useChatWebSocket();
 
-  // Handle createDirect query param
+  // Handle conversation URL param for direct navigation
+  useEffect(() => {
+    const conversationId = searchParams.get('conversation');
+    if (conversationId) {
+      setSelectedConversationId(conversationId);
+      // Clean up URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('conversation');
+      setSearchParams(newParams);
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Handle createDirect query param (for legacy support)
   useEffect(() => {
     const email = searchParams.get('createDirect');
     if (email) {
@@ -68,12 +84,27 @@ export function InboxPage() {
     }
   };
 
-  // Load messages for selected conversation
+  // Load messages for selected conversation and subscribe to WebSocket
   useEffect(() => {
     if (selectedConversationId) {
       loadMessages();
+
+      // Subscribe to real-time messages for this conversation
+      const unsubscribe = subscribeToConversation(
+        selectedConversationId,
+        (newMessage: Message) => {
+          console.log('Received real-time message:', newMessage);
+          setMessages((prev) => [...prev, newMessage]);
+          scrollToBottom();
+        }
+      );
+
+      // Cleanup subscription when conversation changes
+      return () => {
+        unsubscribe();
+      };
     }
-  }, [selectedConversationId]);
+  }, [selectedConversationId, subscribeToConversation]);
 
   const loadMessages = async () => {
     if (!selectedConversationId) return;

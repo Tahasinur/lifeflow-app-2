@@ -17,7 +17,7 @@ public class Message {
     private Conversation conversation;
 
     @Column(name = "sender_id", nullable = false)
-    private Long senderId;
+    private String senderId;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
@@ -40,7 +40,7 @@ public class Message {
     public Message() {
     }
 
-    public Message(String id, Conversation conversation, Long senderId, String content) {
+    public Message(String id, Conversation conversation, String senderId, String content) {
         this.id = id;
         this.conversation = conversation;
         this.senderId = senderId;
@@ -64,11 +64,11 @@ public class Message {
         this.conversation = conversation;
     }
 
-    public Long getSenderId() {
+    public String getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(Long senderId) {
+    public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
 

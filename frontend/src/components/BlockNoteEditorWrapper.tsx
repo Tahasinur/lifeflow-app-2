@@ -5,13 +5,11 @@ import {
   getDefaultReactSlashMenuItems 
 } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
-import { defaultBlockSpecs } from "@blocknote/core";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import './blocknote-custom.css';
 import { Page } from '../types';
 import { ImageIcon, Image as ImageIconLucide, Calendar as CalendarIcon } from 'lucide-react';
-import { CalendarBlock } from './CalendarBlock';
 
 interface BlockNoteEditorWrapperProps {
   page: Page;
@@ -50,13 +48,9 @@ export function BlockNoteEditorWrapper({ page, onUpdatePage }: BlockNoteEditorWr
     }
   }, []);
 
-  // Create editor instance only once with custom calendar block
+  // Create editor instance only once
   const editor = useCreateBlockNote({
     initialContent: initialContent,
-    blockSpecs: {
-      ...defaultBlockSpecs,
-      calendar: CalendarBlock,
-    },
   });
 
   // Handle content changes
@@ -230,13 +224,74 @@ export function BlockNoteEditorWrapper({ page, onUpdatePage }: BlockNoteEditorWr
                   onItemClick: () => {
                     const currentBlock = editor.getTextCursorPosition().block;
                     
-                    // Insert the calendar block after the current block
+                    // Generate a simple calendar placeholder for current month
+                    const now = new Date();
+                    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    
+                    // Insert a simple paragraph with calendar placeholder
                     editor.insertBlocks(
                       [
                         {
-                          type: "calendar",
-                          props: { date: "" },
-                        } as any,
+                          type: "paragraph",
+                          content: [
+                            {
+                              type: "text",
+                              text: `📅 Calendar Placeholder - ${monthName}`,
+                              styles: { bold: true },
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          content: [
+                            {
+                              type: "text",
+                              text: "Sun  Mon  Tue  Wed  Thu  Fri  Sat",
+                              styles: { code: true },
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          content: [
+                            {
+                              type: "text",
+                              text: " 1    2    3    4    5    6    7",
+                              styles: { code: true },
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          content: [
+                            {
+                              type: "text",
+                              text: " 8    9   10   11   12   13   14",
+                              styles: { code: true },
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          content: [
+                            {
+                              type: "text",
+                              text: "15   16   17   18   19   20   21",
+                              styles: { code: true },
+                            },
+                          ],
+                        },
+                        {
+                          type: "paragraph",
+                          content: [
+                            {
+                              type: "text",
+                              text: "22   23   24   25   26   27   28",
+                              styles: { code: true },
+                            },
+                          ],
+                        },
+
                       ],
                       currentBlock,
                       "after"
@@ -253,11 +308,12 @@ export function BlockNoteEditorWrapper({ page, onUpdatePage }: BlockNoteEditorWr
                   aliases: ["calendar", "date", "planner"],
                   group: "Other",
                   icon: <CalendarIcon size={18} />,
-                  subtext: "Insert a calendar block",
+                  subtext: "Insert a calendar placeholder",
                 },
               ];
               
               if (!query) return customItems;
+
               
               return customItems.filter((item) => {
                 const lowerQuery = query.toLowerCase();

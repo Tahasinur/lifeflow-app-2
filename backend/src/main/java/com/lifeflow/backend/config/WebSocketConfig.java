@@ -23,11 +23,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // /user/ destination for user-specific messages (one-to-one)
         // /topic/ destination for broadcast messages
         config.enableSimpleBroker("/user", "/topic");
-        
+
         // Configure the prefix for messages sent by clients
         // Messages sent to /app prefix will be routed to @MessageMapping handlers
         config.setApplicationDestinationPrefixes("/app");
-        
+
         // Configure the prefix for messages sent to specific users
         config.setUserDestinationPrefix("/user");
     }
@@ -39,17 +39,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // WebSocket endpoint for real-time notifications
         registry.addEndpoint("/ws/notifications")
-                .setAllowedOrigins("http://localhost:3000", "http://localhost:5000", "http://localhost:5173")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
-        
+
         // WebSocket endpoint for social updates (follows, unfollows)
         registry.addEndpoint("/ws/social")
-                .setAllowedOrigins("http://localhost:3000", "http://localhost:5000", "http://localhost:5173")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
-        
+
         // Generic WebSocket endpoint
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000", "http://localhost:5000", "http://localhost:5173")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+
+        // Chat WebSocket endpoint for real-time messaging
+        registry.addEndpoint("/ws/chat")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 }

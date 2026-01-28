@@ -265,7 +265,7 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
             </select>
           </div>
 
-          {postType === 'template' && (
+          {(postType === 'template' || postType === 'blog') && (
             <div>
               <label className="block text-sm font-medium text-[#37352F] dark:text-[#E3E3E3] mb-1">
                 Select Page to Share
