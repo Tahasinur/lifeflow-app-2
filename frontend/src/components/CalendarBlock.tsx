@@ -70,7 +70,7 @@ export const CalendarBlock = createReactBlockSpec(
             >
               <span className="calendar-icon">📅</span>
               <span className="calendar-placeholder-text">
-                {isOpen ? 'Calendar (Placeholder)' : 'Click to view calendar placeholder'}
+                {isOpen ? 'Calendar' : 'Click to view calendar'}
               </span>
             </div>
             
@@ -97,7 +97,7 @@ export const CalendarBlock = createReactBlockSpec(
                     </tbody>
                   </table>
                   <div className="calendar-footer">
-                    <small>This is a placeholder calendar (non-functional)</small>
+                    <small>This is a calendar (non-functional)</small>
                   </div>
                 </div>
               </div>

@@ -36,10 +36,13 @@ public class WorkspaceSettings {
     private String customLandingPageJson;
 
     // Publishing settings
+    @Builder.Default
     private boolean allowPublicAccess = false;
 
     // Notification settings
+    @Builder.Default
     private boolean enableNotifications = true;
+    @Builder.Default
     private boolean enableEmailNotifications = true;
 
     @CreationTimestamp

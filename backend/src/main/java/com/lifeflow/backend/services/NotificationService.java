@@ -12,23 +12,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class NotificationService {
-    
+
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
-    
+
     public NotificationService(NotificationRepository notificationRepository, UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
     }
-    
+
     /**
      * Create a new follower notification
      */
@@ -42,10 +40,10 @@ public class NotificationService {
                 .relatedEntityType("USER")
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
     }
-    
+
     /**
      * Create a new post notification for all followers
      */
@@ -53,7 +51,7 @@ public class NotificationService {
         // This will be triggered by feed service when a post is created
         // For now, we'll implement a placeholder
     }
-    
+
     /**
      * Create a new post notification for a specific user
      */
@@ -67,10 +65,10 @@ public class NotificationService {
                 .relatedEntityType("POST")
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
     }
-    
+
     /**
      * Create a post liked notification
      */
@@ -84,10 +82,10 @@ public class NotificationService {
                 .relatedEntityType("POST")
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
     }
-    
+
     /**
      * Create a post commented notification
      */
@@ -101,10 +99,10 @@ public class NotificationService {
                 .relatedEntityType("COMMENT")
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
     }
-    
+
     /**
      * Create a comment replied notification
      */
@@ -118,10 +116,10 @@ public class NotificationService {
                 .relatedEntityType("COMMENT_REPLY")
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
     }
-    
+
     /**
      * Create a mention notification
      */
@@ -135,10 +133,10 @@ public class NotificationService {
                 .relatedEntityType("POST")
                 .isRead(false)
                 .build();
-        
+
         notificationRepository.save(notification);
     }
-    
+
     /**
      * Get all notifications for a user
      */
@@ -147,11 +145,12 @@ public class NotificationService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
-        
-        Page<Notification> notifications = notificationRepository.findByRecipientOrderByCreatedAtDesc(userOpt.get(), pageable);
+
+        Page<Notification> notifications = notificationRepository.findByRecipientOrderByCreatedAtDesc(userOpt.get(),
+                pageable);
         return notifications.map(this::convertToDTO);
     }
-    
+
     /**
      * Get unread notifications for a user
      */
@@ -160,11 +159,12 @@ public class NotificationService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
-        
-        Page<Notification> notifications = notificationRepository.findByRecipientAndIsReadOrderByCreatedAtDesc(userOpt.get(), false, pageable);
+
+        Page<Notification> notifications = notificationRepository
+                .findByRecipientAndIsReadOrderByCreatedAtDesc(userOpt.get(), false, pageable);
         return notifications.map(this::convertToDTO);
     }
-    
+
     /**
      * Get notifications by type
      */
@@ -173,11 +173,12 @@ public class NotificationService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
-        
-        Page<Notification> notifications = notificationRepository.findByRecipientAndTypeOrderByCreatedAtDesc(userOpt.get(), type, pageable);
+
+        Page<Notification> notifications = notificationRepository
+                .findByRecipientAndTypeOrderByCreatedAtDesc(userOpt.get(), type, pageable);
         return notifications.map(this::convertToDTO);
     }
-    
+
     /**
      * Get unread notification count
      */
@@ -186,10 +187,10 @@ public class NotificationService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
-        
+
         return notificationRepository.countByRecipientAndIsRead(userOpt.get(), false);
     }
-    
+
     /**
      * Mark notification as read
      */
@@ -202,7 +203,7 @@ public class NotificationService {
             notificationRepository.save(notification);
         }
     }
-    
+
     /**
      * Mark all notifications as read for a user
      */
@@ -212,14 +213,14 @@ public class NotificationService {
             notificationRepository.markAllAsRead(userOpt.get());
         }
     }
-    
+
     /**
      * Delete a notification
      */
     public void deleteNotification(String notificationId) {
         notificationRepository.deleteById(notificationId);
     }
-    
+
     /**
      * Delete all old notifications for a user (older than 30 days)
      */
@@ -230,7 +231,7 @@ public class NotificationService {
             notificationRepository.deleteOldNotifications(userOpt.get(), thirtyDaysAgo);
         }
     }
-    
+
     /**
      * Get notification summary for dashboard
      */
@@ -239,18 +240,17 @@ public class NotificationService {
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
-        
+
         User user = userOpt.get();
         long totalNotifications = notificationRepository.countByRecipient(user);
         long unreadCount = notificationRepository.countByRecipientAndIsRead(user, false);
-        
+
         return java.util.Map.of(
-            "totalNotifications", totalNotifications,
-            "unreadCount", unreadCount,
-            "readCount", totalNotifications - unreadCount
-        );
+                "totalNotifications", totalNotifications,
+                "unreadCount", unreadCount,
+                "readCount", totalNotifications - unreadCount);
     }
-    
+
     /**
      * Convert Notification entity to DTO
      */

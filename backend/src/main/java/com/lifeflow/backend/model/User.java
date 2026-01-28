@@ -31,12 +31,13 @@ public class User {
     private String name;
     private String preferredName;
     private String avatar;
-    
+
     @Column(columnDefinition = "TEXT")
     private String bio;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
+    @Builder.Default
     private Role role = Role.USER;
 
     @CreationTimestamp
@@ -49,4 +50,3 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 }
-

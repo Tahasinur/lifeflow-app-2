@@ -1,9 +1,8 @@
 package com.lifeflow.backend.controller;
 
-import com.lifeflow.backend.dto.NotificationDTO;
 import com.lifeflow.backend.services.NotificationService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
@@ -21,9 +20,9 @@ import org.slf4j.LoggerFactory;
  */
 @Controller
 public class NotificationWebSocketController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(NotificationWebSocketController.class);
-    
+
     private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -59,16 +58,14 @@ public class NotificationWebSocketController {
 
             // Send to specific user's queue
             messagingTemplate.convertAndSendToUser(
-                message.getFollowingId(),
-                "/queue/notifications",
-                notification
-            );
+                    message.getFollowingId(),
+                    "/queue/notifications",
+                    notification);
 
             // Broadcast to topic for social feed updates
             messagingTemplate.convertAndSend(
-                "/topic/social/follows",
-                notification
-            );
+                    "/topic/social/follows",
+                    notification);
 
             logger.info("Follow notification sent to user: {}", message.getFollowingId());
         } catch (Exception e) {
@@ -100,16 +97,14 @@ public class NotificationWebSocketController {
 
             // Send to specific user
             messagingTemplate.convertAndSendToUser(
-                message.getFollowingId(),
-                "/queue/notifications",
-                notification
-            );
+                    message.getFollowingId(),
+                    "/queue/notifications",
+                    notification);
 
             // Broadcast to topic
             messagingTemplate.convertAndSend(
-                "/topic/social/unfollows",
-                notification
-            );
+                    "/topic/social/unfollows",
+                    notification);
 
             logger.info("Unfollow notification sent to user: {}", message.getFollowingId());
         } catch (Exception e) {

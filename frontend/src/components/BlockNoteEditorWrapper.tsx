@@ -236,7 +236,7 @@ export function BlockNoteEditorWrapper({ page, onUpdatePage }: BlockNoteEditorWr
                           content: [
                             {
                               type: "text",
-                              text: `📅 Calendar Placeholder - ${monthName}`,
+                              text: `📅 Calendar - ${monthName}`,
                               styles: { bold: true },
                             },
                           ],
@@ -308,7 +308,7 @@ export function BlockNoteEditorWrapper({ page, onUpdatePage }: BlockNoteEditorWr
                   aliases: ["calendar", "date", "planner"],
                   group: "Other",
                   icon: <CalendarIcon size={18} />,
-                  subtext: "Insert a calendar placeholder",
+                  subtext: "Insert a calendar",
                 },
               ];
               

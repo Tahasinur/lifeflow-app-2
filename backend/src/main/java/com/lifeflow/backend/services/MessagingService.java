@@ -33,9 +33,6 @@ public class MessagingService {
     @Autowired
     private MessageReactionRepository reactionRepository;
 
-    @Autowired
-    private AttachmentRepository attachmentRepository;
-
     // CONVERSATION OPERATIONS
 
     public List<ConversationDTO> getConversations(String userId) {

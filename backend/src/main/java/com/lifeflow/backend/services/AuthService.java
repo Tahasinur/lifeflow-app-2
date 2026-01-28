@@ -97,7 +97,6 @@ public class AuthService {
         }
 
         String email = jwtTokenProvider.getEmailFromToken(token);
-        String role = jwtTokenProvider.getRoleFromToken(token);
 
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {

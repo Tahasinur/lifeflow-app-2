@@ -3,6 +3,7 @@ package com.lifeflow.backend.services;
 import com.lifeflow.backend.enums.NotificationType;
 import com.lifeflow.backend.model.Notification;
 import com.lifeflow.backend.model.User;
+import java.util.UUID;
 import com.lifeflow.backend.repository.NotificationRepository;
 import com.lifeflow.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,14 +36,15 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
+        String uniqueId = UUID.randomUUID().toString();
         actor = User.builder()
-                .email("actor@test.com")
+                .email("actor_" + uniqueId + "@test.com")
                 .password("password123")
                 .name("Actor User")
                 .build();
 
         recipient = User.builder()
-                .email("recipient@test.com")
+                .email("recipient_" + uniqueId + "@test.com")
                 .password("password123")
                 .name("Recipient User")
                 .build();
@@ -142,8 +144,7 @@ class NotificationServiceTest {
         var notifications = notificationService.getNotificationsByType(
                 recipient.getId(),
                 NotificationType.NEW_FOLLOWER,
-                PageRequest.of(0, 10)
-        );
+                PageRequest.of(0, 10));
 
         assertEquals(1, notifications.getTotalElements());
     }
@@ -163,9 +164,9 @@ class NotificationServiceTest {
 
         var summary = notificationService.getNotificationSummary(recipient.getId());
 
-        assertEquals(2, summary.get("totalNotifications"));
-        assertEquals(1, summary.get("unreadCount"));
-        assertEquals(1, summary.get("readCount"));
+        assertEquals(2L, summary.get("totalNotifications"));
+        assertEquals(1L, summary.get("unreadCount"));
+        assertEquals(1L, summary.get("readCount"));
     }
 
     @Test

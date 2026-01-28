@@ -35,6 +35,7 @@ public class Teamspace {
 
     // Public, Private, Restricted
     @Column(nullable = false)
+    @Builder.Default
     private String accessLevel = "private";
 
     // For tracking team members

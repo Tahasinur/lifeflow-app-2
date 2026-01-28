@@ -7,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Entity
@@ -20,7 +19,7 @@ public class Page {
 
     private String title;
     private String icon;
-    
+
     private String userId;
 
     @Column(columnDefinition = "TEXT")
@@ -33,9 +32,9 @@ public class Page {
     private String editorContentJson;
 
     private String parentId;
-    
-    private boolean favorite = false; 
-    private boolean deleted = false; 
+
+    private boolean favorite = false;
+    private boolean deleted = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
