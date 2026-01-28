@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -28,7 +29,23 @@ export function InboxPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<'all' | 'unread' | 'archived'>('all');
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [initialRecipientEmail, setInitialRecipientEmail] = useState('');
+
+  // Handle createDirect query param
+  useEffect(() => {
+    const email = searchParams.get('createDirect');
+    if (email) {
+      setInitialRecipientEmail(email);
+      setShowCreateDialog(true);
+      // Clean up URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('createDirect');
+      setSearchParams(newParams);
+    }
+  }, [searchParams, setSearchParams]);
 
   // Load conversations
   useEffect(() => {
@@ -324,9 +341,14 @@ export function InboxPage() {
       {/* Create Conversation Dialog */}
       {showCreateDialog && (
         <CreateConversationDialog
-          onClose={() => setShowCreateDialog(false)}
+          initialRecipientEmail={initialRecipientEmail}
+          onClose={() => {
+            setShowCreateDialog(false);
+            setInitialRecipientEmail('');
+          }}
           onSuccess={() => {
             setShowCreateDialog(false);
+            setInitialRecipientEmail('');
             loadConversations();
           }}
         />
@@ -506,11 +528,12 @@ function MessageBubble({ message, onDelete }: MessageBubbleProps) {
 interface CreateConversationDialogProps {
   onClose: () => void;
   onSuccess: () => void;
+  initialRecipientEmail?: string;
 }
 
-function CreateConversationDialog({ onClose, onSuccess }: CreateConversationDialogProps) {
+function CreateConversationDialog({ onClose, onSuccess, initialRecipientEmail = '' }: CreateConversationDialogProps) {
   const [conversationType, setConversationType] = useState<'direct' | 'group'>('direct');
-  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState(initialRecipientEmail);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [loading, setLoading] = useState(false);

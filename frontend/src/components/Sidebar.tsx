@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, Search, ChevronDown, ChevronRight, Globe, Trash, Inbox } from 'lucide-react';
+import { Plus, Trash2, Search, ChevronDown, ChevronRight, Globe, Trash, Inbox, Home } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { Page } from '../types';
 import { UserDropdown } from './UserDropdown';
@@ -12,7 +12,7 @@ interface SidebarProps {
   pages: Page[];
   currentPageId: string | null;
   onSelectPage: (pageId: string | null) => void;
-  onCreatePage: (parentId?: string | null) => void;
+  onCreatePage: (parentId?: string | null) => Promise<string | void> | void;
   onDeletePage: (pageId: string) => void;
 }
 
@@ -24,7 +24,7 @@ interface SidebarItemProps {
   children: Page[];
   onSelectPage: (pageId: string) => void;
   onToggleExpand: (pageId: string) => void;
-  onCreateChild: (parentId: string) => void;
+  onCreateChild: (parentId: string) => Promise<string | void> | void;
   onDeletePage: (pageId: string) => void;
 }
 
@@ -227,14 +227,18 @@ export function Sidebar({
 
   const handleSelectPage = (pageId: string) => {
     onSelectPage(pageId);
-    navigate('/');
+    navigate(`/dashboard?pageId=${pageId}`);
   };
 
-  const handleCreateChild = (parentId: string) => {
-    onCreatePage(parentId);
+  const handleCreateChild = async (parentId: string) => {
+    const newPageId = await onCreatePage(parentId);
     // Expand the parent to show the new child
     setExpandedIds(new Set(expandedIds).add(parentId));
-    navigate('/');
+    if (newPageId) {
+      navigate(`/dashboard?pageId=${newPageId}`);
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -283,6 +287,18 @@ export function Sidebar({
       <div className="px-2 py-3 border-b border-gray-200 dark:border-[#2F2F2F]">
         <button
           onClick={() => {
+            onSelectPage(null);
+            navigate('/dashboard');
+          }}
+          className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3] ${
+            location.pathname === '/dashboard' && !currentPageId ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
+          }`}
+        >
+          <Home className="w-4 h-4" />
+          <span>Home</span>
+        </button>
+        <button
+          onClick={() => {
             searchInputRef.current?.focus();
           }}
           className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3]"
@@ -293,10 +309,10 @@ export function Sidebar({
         <button
           onClick={() => {
             onSelectPage(null);
-            navigate('/inbox');
+            navigate('/dashboard/inbox');
           }}
           className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3] ${
-            location.pathname === '/inbox' ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
+            location.pathname === '/dashboard/inbox' ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
           }`}
         >
           <Inbox className="w-4 h-4" />
@@ -305,10 +321,10 @@ export function Sidebar({
         <button
           onClick={() => {
             onSelectPage(null);
-            navigate('/feed');
+            navigate('/dashboard/feed');
           }}
           className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3] ${
-            location.pathname === '/feed' ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
+            location.pathname.startsWith('/dashboard/feed') ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
           }`}
         >
           <Globe className="w-4 h-4" />
@@ -317,10 +333,10 @@ export function Sidebar({
         <button
           onClick={() => {
             onSelectPage(null);
-            navigate('/trash');
+            navigate('/dashboard/trash');
           }}
           className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors cursor-pointer text-[#37352F] dark:text-[#E3E3E3] ${
-            location.pathname === '/trash' ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
+            location.pathname === '/dashboard/trash' ? 'bg-gray-200 dark:bg-[#2F2F2F]' : ''
           }`}
         >
           <Trash className="w-4 h-4" />
@@ -334,7 +350,7 @@ export function Sidebar({
           <button
             onClick={() => {
               onCreatePage(null);
-              navigate('/');
+              navigate('/dashboard');
             }}
             className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-200 dark:hover:bg-[#2F2F2F] rounded-md transition-colors text-[#37352F] dark:text-[#E3E3E3]"
           >

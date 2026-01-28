@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { AdminPage } from './pages/AdminPage';
@@ -9,6 +10,8 @@ import { TrashPageWrapper } from './pages/TrashPageWrapper';
 import { FeedPage } from './pages/FeedPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UserProfilePage } from './pages/UserProfilePage';
+import { BlogDetailPage } from './pages/BlogDetailPage';
+import { TemplateDetailPage } from './pages/TemplateDetailPage';
 import { InboxPage } from './pages/InboxPage';
 import { RequireAuth } from './components/RequireAuth';
 
@@ -17,13 +20,19 @@ export default function App() {
     <BrowserRouter>
       <Toaster position="bottom-right" />
       <Routes>
+        {/* Public Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+        
         {/* Auth Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/signup" element={<SignupPage />} />
+        {/* Legacy auth routes for backward compatibility */}
+        <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+        <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
 
         {/* Protected Dashboard Routes */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <RequireAuth>
               <DashboardLayout />
@@ -32,6 +41,8 @@ export default function App() {
         >
           <Route index element={<EditorPage />} />
           <Route path="feed" element={<FeedPage />} />
+          <Route path="feed/blog/:id" element={<BlogDetailPage />} />
+          <Route path="feed/template/:id" element={<TemplateDetailPage />} />
           <Route path="inbox" element={<InboxPage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />
           <Route path="user/:userId" element={<UserProfilePage />} />

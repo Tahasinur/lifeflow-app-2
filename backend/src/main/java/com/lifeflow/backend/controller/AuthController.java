@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
 
     @Autowired
@@ -18,17 +19,16 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
         if (request.getEmail() == null || request.getEmail().isEmpty() ||
-            request.getPassword() == null || request.getPassword().isEmpty() ||
-            request.getName() == null || request.getName().isEmpty()) {
+                request.getPassword() == null || request.getPassword().isEmpty() ||
+                request.getName() == null || request.getName().isEmpty()) {
             return ResponseEntity.badRequest().body(
-                AuthResponse.builder()
-                    .message("Email, password, and name are required")
-                    .build()
-            );
+                    AuthResponse.builder()
+                            .message("Email, password, and name are required")
+                            .build());
         }
 
         AuthResponse response = authService.register(request);
-        
+
         if (response.getUserId() != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
@@ -39,16 +39,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         if (request.getEmail() == null || request.getEmail().isEmpty() ||
-            request.getPassword() == null || request.getPassword().isEmpty()) {
+                request.getPassword() == null || request.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body(
-                AuthResponse.builder()
-                    .message("Email and password are required")
-                    .build()
-            );
+                    AuthResponse.builder()
+                            .message("Email and password are required")
+                            .build());
         }
 
         AuthResponse response = authService.login(request);
-        
+
         if (response.getToken() != null) {
             return ResponseEntity.ok(response);
         } else {
@@ -60,10 +59,9 @@ public class AuthController {
     public ResponseEntity<AuthResponse> validateToken(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().body(
-                AuthResponse.builder()
-                    .message("Invalid authorization header")
-                    .build()
-            );
+                    AuthResponse.builder()
+                            .message("Invalid authorization header")
+                            .build());
         }
 
         String token = authHeader.substring(7);

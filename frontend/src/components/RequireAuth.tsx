@@ -19,7 +19,15 @@ export function RequireAuth({ children }: RequireAuthProps) {
 
     // Validate token with backend
     authService.validateToken(token)
-      .then(() => {
+      .then((response) => {
+        // Store/refresh user data when token is validated
+        localStorage.setItem('lifeflow-user', JSON.stringify({
+          id: response.userId,
+          email: response.email,
+          name: response.name,
+          firstName: response.name?.split(' ')[0] || response.name,
+          role: response.role
+        }));
         setIsAuthenticated(true);
       })
       .catch(() => {
@@ -34,7 +42,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return <>{children}</>;

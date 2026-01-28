@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, User, Settings, Users, Upload, Moon, Sun, AlertTriangle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme } from '../hooks/useTheme';
@@ -285,7 +286,7 @@ export function SettingsModal({ isOpen, onClose, userId }: SettingsModalProps) {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
@@ -699,7 +700,8 @@ export function SettingsModal({ isOpen, onClose, userId }: SettingsModalProps) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

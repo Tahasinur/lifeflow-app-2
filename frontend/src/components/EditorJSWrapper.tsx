@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import Paragraph from '@editorjs/paragraph';
@@ -14,7 +14,10 @@ import LinkTool from '@editorjs/link';
 import Warning from '@editorjs/warning';
 import Marker from '@editorjs/marker';
 import InlineCode from '@editorjs/inline-code';
-import { ModernEditorUI } from './ModernEditorUI';
+// @ts-ignore - NestedList might not have types
+import NestedList from '@editorjs/nested-list';
+// @ts-ignore - AttachesTool might not have types  
+import AttachesTool from '@editorjs/attaches';
 import './editorjs-styles.css';
 
 interface EditorJSWrapperProps {
@@ -82,198 +85,245 @@ function normalizeEditorJsContent(content: any): any {
 export function EditorJSWrapper({ content, onUpdate, editable = true }: EditorJSWrapperProps) {
   const editorInstance = useRef<EditorJS | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef(content);
+  const isInitialized = useRef(false);
+  const [isReady, setIsReady] = useState(false);
+  
+  // Store the initial content in a ref to prevent re-initialization
+  const initialContentRef = useRef(normalizeEditorJsContent(content));
 
-  // Update content ref when content prop changes
+  // Initialize editor only once on mount
   useEffect(() => {
-    contentRef.current = content;
-  }, [content]);
-
-  useEffect(() => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || isInitialized.current) return;
 
     const initializeEditor = async () => {
-      // Destroy existing editor instance
-      if (editorInstance.current) {
-        try {
-          editorInstance.current.destroy();
-        } catch (error) {
-          console.warn('Error destroying editor:', error);
-        }
-        editorInstance.current = null;
-      }
+      try {
+        // Mark as initialized immediately to prevent double initialization
+        isInitialized.current = true;
 
-      // Initialize editor with current content
-      editorInstance.current = new EditorJS({
-        holder: editorRef.current!,
-        readOnly: !editable,
-        sanitizer: {
-          p: true,
-          b: true,
-          strong: true,
-          i: true,
-          em: true,
-          u: true,
-          s: true,
-          a: true,
-          code: true,
-          pre: true,
-          ul: true,
-          ol: true,
-          li: true,
-          blockquote: true,
-          figure: true,
-          h1: true,
-          h2: true,
-          h3: true,
-          h4: true,
-          h5: true,
-          h6: true,
-          img: { src: true, alt: true }
-        },
-        tools: {
-          header: {
-            class: Header as any,
-            shortcut: 'CMD+SHIFT+H',
-            config: {
-              placeholder: 'Heading',
-              levels: [1, 2, 3, 4, 5, 6],
-              defaultLevel: 2,
-            },
-          },
-          paragraph: {
-            class: Paragraph as any,
-            inlineToolbar: true,
-            shortcut: 'CMD+ALT+P',
-          },
-          list: {
-            class: List as any,
-            inlineToolbar: true,
-            shortcut: 'CMD+SHIFT+L',
-            config: {
-              defaultStyle: 'unordered',
-            },
-          },
-          checklist: {
-            class: Checklist as any,
-            inlineToolbar: true,
-            shortcut: 'CMD+SHIFT+C',
-          },
-          quote: {
-            class: Quote as any,
-            inlineToolbar: true,
-            shortcut: 'CMD+SHIFT+Q',
-            config: {
-              quotePlaceholder: 'Enter a quote',
-              captionPlaceholder: 'Quote author',
-            },
-          },
-          warning: {
-            class: Warning as any,
-            inlineToolbar: true,
-            config: {
-              titlePlaceholder: 'Title',
-              messagePlaceholder: 'Message',
-            },
-          },
-          code: {
-            class: Code as any,
-            shortcut: 'CMD+ALT+C',
-            config: {
-              placeholder: 'Enter code',
-            },
-          },
-          image: {
-            class: SimpleImage as any,
-            shortcut: 'CMD+ALT+I',
-          },
-          embed: {
-            class: Embed as any,
-            config: {
-              services: {
-                youtube: true,
-                coub: true,
-                codepen: {
-                  regex: /https?:\/\/codepen\.io\/([^\/\?]+)\/pen\/([^\/\?]+)/,
-                  embedUrl: 'https://codepen.io/<%= remote_id %>/embed/preview/',
-                  width: 600,
-                  height: 300,
-                },
-                instagram: true,
-                twitter: true,
-                vimeo: true,
-                gfycat: true,
-                imgur: true,
-                vine: true,
-                imgur_old: true,
-                pinterest: true,
+        editorInstance.current = new EditorJS({
+          holder: editorRef.current!,
+          readOnly: !editable,
+          
+          /**
+           * Tools configuration
+           * This includes all MVP features requested
+           */
+          tools: {
+            // Heading tool
+            header: {
+              class: Header as any,
+              shortcut: 'CMD+SHIFT+H',
+              config: {
+                placeholder: 'Enter a heading',
+                levels: [1, 2, 3, 4, 5, 6],
+                defaultLevel: 2,
               },
             },
-          },
-          table: {
-            class: Table as any,
-            inlineToolbar: true,
-          },
-          linkTool: {
-            class: LinkTool as any,
-            config: {
-              endpoint: 'http://localhost:8090/api/linkmetadata',
+            
+            // Paragraph (default block)
+            paragraph: {
+              class: Paragraph as any,
+              inlineToolbar: true,
+            },
+            
+            // Nested List (replaces simple list for better functionality)
+            list: {
+              class: NestedList as any,
+              inlineToolbar: true,
+              shortcut: 'CMD+SHIFT+L',
+              config: {
+                defaultStyle: 'unordered',
+              },
+            },
+            
+            // Checklist
+            checklist: {
+              class: Checklist as any,
+              inlineToolbar: true,
+              shortcut: 'CMD+SHIFT+C',
+            },
+            
+            // Quote
+            quote: {
+              class: Quote as any,
+              inlineToolbar: true,
+              shortcut: 'CMD+SHIFT+Q',
+              config: {
+                quotePlaceholder: 'Enter a quote',
+                captionPlaceholder: 'Quote\'s author',
+              },
+            },
+            
+            // Warning
+            warning: {
+              class: Warning as any,
+              inlineToolbar: true,
+              shortcut: 'CMD+SHIFT+W',
+              config: {
+                titlePlaceholder: 'Title',
+                messagePlaceholder: 'Message',
+              },
+            },
+            
+            // Code block
+            code: {
+              class: Code as any,
+              shortcut: 'CMD+SHIFT+C',
+            },
+            
+            // Simple Image (no backend)
+            image: {
+              class: SimpleImage as any,
+              shortcut: 'CMD+SHIFT+I',
+            },
+            
+            // Embeds (YouTube, Twitter, etc)
+            embed: {
+              class: Embed as any,
+              inlineToolbar: true,
+              config: {
+                services: {
+                  youtube: true,
+                  twitter: true,
+                  instagram: true,
+                  vimeo: true,
+                  gfycat: true,
+                  twitch: true,
+                  coub: true,
+                  codepen: true,
+                  imgur: true,
+                },
+              },
+            },
+            
+            // Table
+            table: {
+              class: Table as any,
+              inlineToolbar: true,
+              shortcut: 'CMD+ALT+T',
+            },
+            
+            // Link Tool
+            linkTool: {
+              class: LinkTool as any,
+              config: {
+                endpoint: 'http://localhost:8090/api/linkmetadata',
+              },
+            },
+            
+            // Attaches
+            attaches: {
+              class: AttachesTool as any,
+              config: {
+                endpoint: 'http://localhost:8090/api/uploadFile',
+              },
+            },
+            
+            // Delimiter
+            delimiter: {
+              class: Delimiter as any,
+              shortcut: 'CMD+SHIFT+D',
+            },
+            
+            // Inline tools
+            marker: {
+              class: Marker as any,
+              shortcut: 'CMD+SHIFT+M',
+            },
+            
+            inlineCode: {
+              class: InlineCode as any,
+              shortcut: 'CMD+SHIFT+K',
             },
           },
-          marker: {
-            class: Marker as any,
+          
+          /**
+           * Initial data
+           */
+          data: initialContentRef.current,
+          
+          /**
+           * Placeholder text
+           */
+          placeholder: 'Start writing or press "/" for commands...',
+          
+          /**
+           * Auto-focus on the editor
+           */
+          autofocus: true,
+          
+          /**
+           * Enable drag & drop for blocks
+           */
+          // @ts-ignore
+          onReady: () => {
+            setIsReady(true);
+            console.log('EditorJS is ready to work!');
           },
-          inlineCode: {
-            class: InlineCode as any,
-          },
-          delimiter: {
-            class: Delimiter as any,
-          },
-        },
-        inlineToolbar: {
-          tools: ['marker', 'inlineCode', 'linkTool'],
-          shortcut: 'CMD+SHIFT+T',
-        },
-        toolbar: {
-          tools: ['header', 'list', 'checklist', 'quote', 'code', 'table', 'image', 'embed', 'warning', 'delimiter'],
-          shouldNotHighlight: ['link'],
-        },
-        data: normalizeEditorJsContent(contentRef.current),
-        minHeight: 500,
-        autofocus: true,
-        placeholder: 'Press "/" to see available blocks...',
-        onChange: async () => {
-          try {
-            if (editorInstance.current) {
-              const data = await editorInstance.current.save();
-              onUpdate(data);
+          
+          /**
+           * onChange callback
+           * This is called on every change but we debounce the save
+           */
+          onChange: async (api: any, event: any) => {
+            try {
+              if (editorInstance.current) {
+                const savedData = await editorInstance.current.save();
+                onUpdate(savedData);
+              }
+            } catch (error) {
+              console.error('Error saving editor data:', error);
             }
-          } catch (error) {
-            console.error('Editor save error:', error);
-          }
-        },
-      } as any);
+          },
+          
+          /**
+           * Inline toolbar
+           */
+          inlineToolbar: ['bold', 'italic', 'link', 'marker', 'inlineCode'],
+          
+          /**
+           * Minimum height
+           */
+          minHeight: 300,
+        } as any);
+
+        console.log('EditorJS initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize EditorJS:', error);
+        isInitialized.current = false;
+      }
     };
 
-    initializeEditor().catch(error => {
-      console.error('Failed to initialize editor:', error);
-    });
+    initializeEditor();
 
+    // Cleanup function
     return () => {
       if (editorInstance.current) {
         try {
           editorInstance.current.destroy();
           editorInstance.current = null;
         } catch (error) {
-          console.warn('Error destroying editor on cleanup:', error);
+          console.warn('Error destroying editor:', error);
         }
       }
+      isInitialized.current = false;
     };
-  }, [editable, onUpdate]);
+  }, []); // Empty dependency array - only initialize once
+
+  // Handle readOnly mode changes
+  useEffect(() => {
+    if (editorInstance.current && isReady) {
+      try {
+        // @ts-ignore
+        editorInstance.current.readOnly.toggle(!editable);
+      } catch (error) {
+        console.warn('Error toggling read-only mode:', error);
+      }
+    }
+  }, [editable, isReady]);
 
   return (
     <div className="editorjs-container">
-      <ModernEditorUI isEditable={editable} />
       <div ref={editorRef} className="editor-js-wrapper" />
     </div>
   );

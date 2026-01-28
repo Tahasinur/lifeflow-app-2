@@ -1,5 +1,6 @@
 import { useOutletContext } from 'react-router';
-import { TipTapEditor } from '../components/TipTapEditor';
+import { BlockNoteEditorWrapper } from '../components/BlockNoteEditorWrapper';
+import { HomePage } from './HomePage';
 import { Page } from '../types';
 
 interface OutletContext {
@@ -15,15 +16,13 @@ export function EditorPage() {
 
   if (!currentPage) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-600">
-        <p>Select a page or create a new one to get started</p>
-      </div>
+      <HomePage pages={pages} />
     );
   }
 
   return (
     <div className="flex-1 overflow-hidden bg-white dark:bg-[#191919]">
-      <TipTapEditor page={currentPage} onUpdatePage={handleUpdatePage} />
+      <BlockNoteEditorWrapper page={currentPage} onUpdatePage={handleUpdatePage} />
     </div>
   );
 }

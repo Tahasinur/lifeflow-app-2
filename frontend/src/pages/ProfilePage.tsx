@@ -32,7 +32,7 @@ export function ProfilePage() {
         setProfile(data);
       } else {
         toast.error('User not found');
-        navigate('/feed');
+        navigate('/dashboard/feed');
       }
     } catch (err) {
       console.error('Failed to load profile:', err);
@@ -66,7 +66,7 @@ export function ProfilePage() {
       if (res.ok) {
         const data = await res.json();
         toast.success(data.message || "Template cloned!");
-        navigate(`/page/${data.pageId}`);
+        navigate(`/dashboard?pageId=${data.pageId}`);
       } else {
         const error = await res.json();
         toast.error(error.error || "Failed to clone template");
@@ -111,7 +111,7 @@ export function ProfilePage() {
         transition={{ duration: 0.4 }}
       >
         <motion.button 
-          onClick={() => navigate('/feed')}
+          onClick={() => navigate('/dashboard/feed')}
           className="flex items-center gap-2 text-sm text-[#9B9A97] hover:text-[#37352F] dark:hover:text-[#E3E3E3] mb-4"
           whileHover={{ x: -4 }}
         >

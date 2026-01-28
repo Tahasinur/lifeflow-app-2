@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Page } from '../types';
 
 const getUserId = (): string | null => {
@@ -43,6 +44,7 @@ export function useDashboard() {
   const [pages, setPages] = useState<Page[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
   
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -75,12 +77,33 @@ export function useDashboard() {
         }));
         setPages(formattedPages);
         setIsLoading(false);
+
+        // Open page from URL param if present and valid
+        const pageIdFromUrl = searchParams.get('pageId');
+        if (pageIdFromUrl && formattedPages.some((p: Page) => p.id === pageIdFromUrl)) {
+          setCurrentPageId(pageIdFromUrl);
+        }
       })
       .catch((err) => {
         console.error("Failed to load:", err);
         setIsLoading(false);
       });
   }, []);
+
+  // Sync currentPageId with URL search params
+  useEffect(() => {
+    const pageIdFromUrl = searchParams.get('pageId');
+    if (pageIdFromUrl && pageIdFromUrl !== currentPageId) {
+      // Validate page exists (optional but good)
+      if (pages.some(p => p.id === pageIdFromUrl) || pages.length === 0) { // If pages are loading, we might optimize, but pages usually loaded by now
+         setCurrentPageId(pageIdFromUrl);
+      }
+    } else if (!pageIdFromUrl && currentPageId) {
+        // If URL has no pageId, clear selection (e.g. Home button clicked)
+        setCurrentPageId(null);
+    }
+  }, [searchParams, pages]); 
+
 
   const saveToBackend = async (page: Page) => {
     console.log("Saving to backend...", page.title);

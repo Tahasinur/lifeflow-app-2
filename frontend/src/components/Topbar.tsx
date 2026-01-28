@@ -180,23 +180,48 @@ export function Topbar({
     <div className="flex flex-col border-b border-gray-200 dark:border-[#2F2F2F] bg-white dark:bg-[#191919]">
       {/* Main toolbar */}
       <div className="h-12 flex items-center justify-between px-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <button
             onClick={onToggleSidebar}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-[#2F2F2F] rounded-md transition-colors text-[#37352F] dark:text-[#E3E3E3]"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-[#2F2F2F] rounded-md transition-colors text-[#37352F] dark:text-[#E3E3E3] flex-shrink-0"
             title={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
           >
             <Menu className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 text-sm text-[#37352F] dark:text-[#E3E3E3]">
-            <span className="text-gray-500 dark:text-gray-400">{firstName}'s Workspace</span>
-            <span className="text-gray-400 dark:text-gray-500">/</span>
-            <span className="flex items-center gap-2">
-              <span>{currentPage?.icon || '📄'}</span>
-              <span>{currentPage?.title || 'Untitled'}</span>
-            </span>
-          </div>
+          {/* Tab System - replaces workspace/page name */}
+          {openTabs && openTabs.length > 0 ? (
+            <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+              {openTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => onSelectTab?.(tab.id)}
+                  className={`group flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-all whitespace-nowrap flex-shrink-0 ${
+                    currentPageId === tab.page.id
+                      ? 'bg-gray-100 dark:bg-[#2F2F2F] text-[#37352F] dark:text-[#E3E3E3] shadow-sm'
+                      : 'text-[#9B9A97] dark:text-[#888888] hover:bg-gray-50 dark:hover:bg-[#252525]'
+                  }`}
+                >
+                  <span className="text-base">{tab.page.icon || '📄'}</span>
+                  <span className="max-w-[120px] truncate">{tab.page.title || 'Untitled'}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCloseTab?.(tab.id);
+                    }}
+                    className="p-0.5 hover:bg-gray-200 dark:hover:bg-[#3F3F3F] rounded transition-colors opacity-0 group-hover:opacity-100"
+                    title="Close tab"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-[#37352F] dark:text-[#E3E3E3]">
+              <span className="text-gray-500 dark:text-gray-400">No tabs open</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -416,35 +441,6 @@ export function Topbar({
           </Popover>
         </div>
       </div>
-
-      {/* Tabs section */}
-      {openTabs && openTabs.length > 0 && (
-        <div className="h-10 flex items-center gap-1 px-4 bg-gray-50 dark:bg-[#1A1A1A] border-t border-gray-200 dark:border-[#2F2F2F] overflow-x-auto">
-          {openTabs.map((tab, index) => (
-            <button
-              key={tab.id}
-              onClick={() => onSelectTab?.(tab.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors whitespace-nowrap ${
-                currentPageId === tab.id
-                  ? 'bg-white dark:bg-[#2F2F2F] text-[#37352F] dark:text-[#E3E3E3]'
-                  : 'text-[#9B9A97] dark:text-[#888888] hover:bg-gray-100 dark:hover:bg-[#2F2F2F]'
-              }`}
-            >
-              <span>{tab.page.icon}</span>
-              <span className="max-w-[150px] truncate">{tab.page.title || 'Untitled'}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloseTab?.(tab.id);
-                }}
-                className="p-0.5 hover:bg-gray-200 dark:hover:bg-[#3F3F3F] rounded transition-colors"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

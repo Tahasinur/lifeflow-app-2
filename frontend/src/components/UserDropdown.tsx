@@ -15,7 +15,8 @@ export function UserDropdown({ onClose, onOpenSettings }: UserDropdownProps) {
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('lifeflow-user');
-    navigate('/login');
+    localStorage.removeItem('lifeflow-token');
+    navigate('/auth/login');
     toast.success('Logged out successfully');
     onClose();
   };

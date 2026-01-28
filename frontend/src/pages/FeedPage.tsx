@@ -7,12 +7,12 @@ import { FeedItem } from '../types';
 
 export function FeedPage() {
   const navigate = useNavigate();
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [feedItems, setFeedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'template' | 'blog' | 'workspace_update'>('all');
-  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFeedItems = async () => {
@@ -41,7 +41,7 @@ export function FeedPage() {
     const matchesType = filterType === 'all' || item.type === filterType;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                          item.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesType && matchesSearch;
   });
 
@@ -76,33 +76,60 @@ export function FeedPage() {
     }
   };
 
-  const handleOpenItem = (item: FeedItem) => {
+  const handleOpenItem = (item: any) => {
     if (item.type === 'blog') {
-      toast.info('Opening blog post...');
-      // Navigate to blog detail page or open modal
+      navigate(`/dashboard/feed/blog/${item.id}`);
     } else if (item.type === 'template') {
-      toast.info('Viewing template details...');
-      // Navigate to template detail page or open modal
+      navigate(`/dashboard/feed/template/${item.id}`);
     } else {
       toast.info('Viewing workspace update...');
     }
   };
 
-  const handleLike = (itemId: string) => {
-    setLikedItems(prev => {
-      const newLiked = new Set(prev);
-      if (newLiked.has(itemId)) {
-        newLiked.delete(itemId);
-      } else {
-        newLiked.add(itemId);
+  const handleLike = async (itemId: string) => {
+    try {
+      const token = localStorage.getItem('lifeflow-token');
+      if (!token) {
+        toast.error('Please login to like posts');
+        return;
       }
-      return newLiked;
-    });
-    toast.success('Liked!');
+
+      const response = await fetch(`/api/feed/${itemId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to like post');
+      }
+
+      const data = await response.json();
+      
+      // Update the feed item with new like count and status
+      setFeedItems(prevItems =>
+        prevItems.map(item =>
+          item.id === itemId
+            ? { ...item, likes: data.likes, isLiked: data.isLiked }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error('Error liking post:', err);
+      toast.error('Failed to like post');
+    }
   };
 
-  const handleCopyTemplate = async (item: FeedItem) => {
+  const handleCopyTemplate = async (item: any) => {
     try {
+      const token = localStorage.getItem('lifeflow-token');
+      if (!token) {
+        toast.error('Please login to copy templates');
+        return;
+      }
+
       if (!item.sourcePageId) {
         toast.error('Template source not available');
         return;
@@ -111,6 +138,7 @@ export function FeedPage() {
       const response = await fetch(`/api/feed/${item.id}/clone`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -121,6 +149,11 @@ export function FeedPage() {
 
       const result = await response.json();
       toast.success('Template copied to your workspace!');
+      
+      // Navigate to the new page after a short delay
+      setTimeout(() => {
+        navigate(`/dashboard?pageId=${result.pageId}`);
+      }, 1000);
     } catch (err) {
       console.error('Error cloning template:', err);
       toast.error('Failed to copy template');
@@ -129,9 +162,9 @@ export function FeedPage() {
 
   const handleAuthorClick = (authorId?: string, authorName?: string) => {
     if (authorId) {
-      navigate(`/user/${authorId}`);
+      navigate(`/dashboard/user/${authorId}`);
     } else if (authorName) {
-      navigate(`/user/${authorName}`);
+      navigate(`/dashboard/user/${authorName}`);
     }
   };
 
@@ -253,7 +286,7 @@ export function FeedPage() {
                   {/* Tags */}
                   {item.tags && item.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {item.tags.map((tag, tagIndex) => (
+                      {item.tags.map((tag: string, tagIndex: number) => (
                         <motion.span
                           key={tag}
                           className="px-2 py-1 bg-gray-100 dark:bg-[#2F2F2F] text-gray-700 dark:text-gray-300 text-xs rounded-full"
@@ -298,7 +331,7 @@ export function FeedPage() {
                       <motion.button
                         onClick={() => handleLike(item.id)}
                         className={`flex items-center gap-1 transition-colors ${
-                          likedItems.has(item.id)
+                          item.isLiked
                             ? 'text-red-600 dark:text-red-400'
                             : 'text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400'
                         }`}
@@ -306,14 +339,15 @@ export function FeedPage() {
                         whileTap={{ scale: 0.9 }}
                       >
                         <motion.div
-                          animate={likedItems.has(item.id) ? { scale: [1, 1.3, 1] } : {}}
+                          animate={item.isLiked ? { scale: [1, 1.3, 1] } : {}}
                           transition={{ duration: 0.3 }}
                         >
-                          <Heart className="w-4 h-4" fill={likedItems.has(item.id) ? 'currentColor' : 'none'} />
+                          <Heart className="w-4 h-4" fill={item.isLiked ? 'currentColor' : 'none'} />
                         </motion.div>
                         <span className="text-sm">{item.likes}</span>
                       </motion.button>
                       <motion.button 
+                        onClick={() => handleOpenItem(item)}
                         className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 0.9 }}

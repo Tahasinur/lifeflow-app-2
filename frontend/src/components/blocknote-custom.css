@@ -1,0 +1,452 @@
+/* BlockNote Custom Styling - Notion-like theme */
+
+.blocknote-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== DARK MODE FIXES ===== */
+
+/* Container - remove white background in dark mode */
+.bn-container {
+  background: transparent !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.dark .bn-container {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Editor content area */
+.bn-editor {
+  padding: 40px 60px;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  background: transparent !important;
+}
+
+.dark .bn-editor {
+  background: transparent !important;
+}
+
+/* Block styling - fix white boxes in dark mode */
+.bn-block-outer {
+  margin-bottom: 2px;
+  background: transparent !important;
+}
+
+.dark .bn-block-outer {
+  background: transparent !important;
+}
+
+.bn-block-content {
+  background: transparent !important;
+  color: #37352f;
+  line-height: 1.6;
+}
+
+.dark .bn-block-content {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Fix block inner elements */
+.bn-block-content > * {
+  background: transparent !important;
+}
+
+.dark .bn-block-content > * {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Inline content */
+.bn-inline-content {
+  background: transparent !important;
+}
+
+.dark .bn-inline-content {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ===== DRAG HANDLE ===== */
+
+/* Make drag handle clearly visible with clean design */
+.bn-drag-handle-menu {
+  opacity: 0.7 !important;
+  transition: opacity 0.2s ease;
+}
+
+.bn-block-outer:hover .bn-drag-handle-menu {
+  opacity: 1 !important;
+}
+
+.bn-drag-handle-menu button {
+  cursor: grab;
+  border-radius: 4px;
+  padding: 4px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #9ca3af !important;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.dark .bn-drag-handle-menu button {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.bn-drag-handle-menu button:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #6b7280 !important;
+}
+
+.dark .bn-drag-handle-menu button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.bn-drag-handle-menu button:active {
+  cursor: grabbing;
+  color: #374151 !important;
+}
+
+.dark .bn-drag-handle-menu button:active {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ===== SIDE MENU (Block Menu) ===== */
+
+/* Make side menu buttons clean and minimal */
+.bn-side-menu {
+  opacity: 0.5 !important;
+  transition: opacity 0.2s ease;
+  display: flex !important;
+  gap: 2px;
+  margin-left: -48px; /* More spacing from text */
+  padding-right: 4px;
+}
+
+.bn-block-outer:hover .bn-side-menu {
+  opacity: 1 !important;
+}
+
+.bn-side-menu button {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 4px;
+  padding: 4px;
+  color: #9ca3af !important;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: none !important;
+}
+
+.dark .bn-side-menu button {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.bn-side-menu button:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #6b7280 !important;
+}
+
+.dark .bn-side-menu button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Plus button (add block) */
+.bn-side-menu button[data-test="addBlock"] {
+  font-weight: 400;
+  font-size: 18px;
+}
+
+
+
+/* ===== SLASH MENU - FIX GLITCHING ===== */
+
+.bn-slash-menu {
+  background: white !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  /* Prevent glitching */
+  position: absolute;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.dark .bn-slash-menu {
+  background: #1f1f1f !important;
+  border-color: #3f3f3f;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bn-slash-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-radius: 4px;
+  margin: 2px 4px;
+  color: #37352f;
+}
+
+.dark .bn-slash-menu-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.bn-slash-menu-item:hover,
+.bn-slash-menu-item[data-selected="true"] {
+  background: #f3f4f6 !important;
+}
+
+.dark .bn-slash-menu-item:hover,
+.dark .bn-slash-menu-item[data-selected="true"] {
+  background: #2f2f2f !important;
+}
+
+/* Slash menu label/title */
+.bn-slash-menu-label {
+  color: #37352f !important;
+}
+
+.dark .bn-slash-menu-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ===== FORMATTING TOOLBAR ===== */
+
+.bn-formatting-toolbar {
+  background: white !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  z-index: 1000;
+}
+
+.dark .bn-formatting-toolbar {
+  background: #1f1f1f !important;
+  border-color: #3f3f3f;
+}
+
+.bn-formatting-toolbar button {
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+  color: #37352f;
+  background: transparent;
+}
+
+.dark .bn-formatting-toolbar button {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent;
+}
+
+.bn-formatting-toolbar button:hover {
+  background: #f3f4f6 !important;
+}
+
+.dark .bn-formatting-toolbar button:hover {
+  background: #2f2f2f !important;
+}
+
+/* ===== HEADINGS ===== */
+
+[data-content-type="heading"] {
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  background: transparent !important;
+}
+
+[data-content-type="heading"][data-level="1"] {
+  font-size: 2.5em;
+  line-height: 1.2;
+}
+
+[data-content-type="heading"][data-level="2"] {
+  font-size: 1.9em;
+  line-height: 1.3;
+}
+
+[data-content-type="heading"][data-level="3"] {
+  font-size: 1.5em;
+  line-height: 1.4;
+}
+
+.dark [data-content-type="heading"] {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent !important;
+}
+
+/* ===== LISTS ===== */
+
+[data-content-type="bulletListItem"],
+[data-content-type="numberedListItem"],
+[data-content-type="checkListItem"] {
+  margin-left: 1.5em;
+  background: transparent !important;
+}
+
+.dark [data-content-type="bulletListItem"],
+.dark [data-content-type="numberedListItem"],
+.dark [data-content-type="checkListItem"] {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent !important;
+}
+
+/* List markers */
+.bn-list-item-content {
+  background: transparent !important;
+}
+
+.dark .bn-list-item-content {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ===== PLACEHOLDER ===== */
+
+.bn-block-content[data-placeholder]::before {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.dark .bn-block-content[data-placeholder]::before {
+  color: #6b7280 !important;
+}
+
+/* ===== SELECTION ===== */
+
+.bn-block-content::selection {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.dark .bn-block-content::selection {
+  background: rgba(96, 165, 250, 0.3);
+}
+
+/* ===== FOCUS ===== */
+
+.bn-editor:focus-within {
+  outline: none;
+}
+
+/* ===== ANIMATIONS ===== */
+
+.bn-block-outer {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== SCROLLBAR ===== */
+
+.bn-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+.bn-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bn-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dark .bn-container::-webkit-scrollbar-thumb {
+  background: #4f4f4f;
+  background-clip: content-box;
+}
+
+.bn-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+  background-clip: content-box;
+}
+
+.dark .bn-container::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+  background-clip: content-box;
+}
+
+/* ===== SIDE MENU (Block Menu) ===== */
+
+.bn-side-menu {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.bn-block-outer:hover .bn-side-menu {
+  opacity: 1;
+}
+
+.bn-side-menu button {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+}
+
+.dark .bn-side-menu button {
+  background: #2d2d2d;
+  border-color: #3f3f3f;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== BLOCK MENU DROPDOWN ===== */
+
+.bn-block-menu {
+  background: white !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dark .bn-block-menu {
+  background: #1f1f1f !important;
+  border-color: #3f3f3f;
+}
+
+.bn-block-menu-item {
+  color: #37352f;
+}
+
+.dark .bn-block-menu-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.bn-block-menu-item:hover {
+  background: #f3f4f6 !important;
+}
+
+.dark .bn-block-menu-item:hover {
+  background: #2f2f2f !important;
+}
+
+/* ===== ADDITIONAL ELEMENTS ===== */
+
+/* Ensure all text inputs have proper colors */
+.dark input,
+.dark textarea,
+.dark [contenteditable] {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent !important;
+}
+
+/* Dividers/separators */
+.dark .bn-divider {
+  border-color: #3f3f3f !important;
+}

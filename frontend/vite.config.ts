@@ -56,9 +56,8 @@ export default defineConfig({
     outDir: 'build',
   },
   server: {
-    host: '0.0.0.0',
-    port: 5000,
-    allowedHosts: true,
+    host: true, // Expose to network (same as '0.0.0.0')
+    port: 5173,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

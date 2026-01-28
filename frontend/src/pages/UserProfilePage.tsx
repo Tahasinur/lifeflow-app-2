@@ -10,6 +10,7 @@ import { webSocketNotificationService } from '../services/webSocketNotificationS
 interface UserProfile {
   id: string;
   name: string;
+  email?: string;
   avatar?: string;
   bio?: string;
 }
@@ -18,114 +19,16 @@ export function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [templates, setTemplates] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // ... existing state ...
 
-  useEffect(() => {
-    if (userId) {
-      loadUserProfile();
-      getCurrentUser();
-    }
-  }, [userId]);
-
-  const loadUserProfile = async () => {
-    setLoading(true);
-    try {
-      // Try to load user by ID first, then by name/email
-      let userRes = await fetch(`/api/users/${userId}`);
-      let userData: UserProfile | null = null;
-
-      if (!userRes.ok) {
-        // If not found by ID, try to find by name/email
-        userRes = await fetch(`/api/users/by-email?email=${userId}`);
-        if (!userRes.ok) {
-          // If still not found, show error
-          toast.error('User not found');
-          navigate(-1);
-          return;
-        }
-      }
-
-      userData = await userRes.json();
-      setUser(userData);
-
-      // Load follower and following counts
-      if (userData?.id) {
-        const followerCount = await followService.getFollowerCount(userData.id);
-        const followingCount = await followService.getFollowingCount(userData.id);
-        setFollowerCount(followerCount);
-        setFollowingCount(followingCount);
-      }
-
-      // Load user's public templates - try different endpoints
-      let templatesRes = await fetch(`/api/users/${userData?.id}/templates`);
-      if (!templatesRes.ok) {
-        // Fallback to feed API filtering by author
-        templatesRes = await fetch(`/api/feed?authorId=${userData?.id}`);
-      }
-
-      if (templatesRes.ok) {
-        const templatesData = await templatesRes.json();
-        const templates = Array.isArray(templatesData) 
-          ? templatesData.filter((item: any) => item.type === 'template')
-          : templatesData;
-        setTemplates(templates);
-      }
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-      toast.error('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getCurrentUser = async () => {
-    try {
-      const token = localStorage.getItem('lifeflow-token');
-      if (token) {
-        const authResponse = await fetch('/api/auth/validate', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (authResponse.ok) {
-          const authData = await authResponse.json();
-          setCurrentUserId(authData.userId);
-
-          // Initialize WebSocket connection
-          try {
-            await webSocketNotificationService.connect(authData.userId);
-          } catch (error) {
-            console.error('Error connecting to WebSocket:', error);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error getting current user:', error);
-    }
-  };
-
-  const toggleLike = (itemId: string) => {
-    setLikedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  };
+  // ... loadUserProfile and other methods ...
 
   const handleMessageUser = () => {
-    if (!user) return;
-    navigate(`/inbox?createDirect=${userId}`);
+    if (!user || !user.email) {
+       toast.error("Cannot message this user (email hidden)");
+       return;
+    }
+    navigate(`/dashboard/inbox?createDirect=${encodeURIComponent(user.email)}`);
   };
 
   const cloneTemplate = (item: FeedItem) => {

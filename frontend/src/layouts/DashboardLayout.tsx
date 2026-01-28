@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sidebar } from '../components/Sidebar';
 import { Topbar } from '../components/Topbar';
 import { ShareModal } from '../components/ShareModal';
 import { useDashboard } from '../hooks/useDashboard';
+import { useOpenTabs } from '../hooks/useOpenTabs';
 
 export function DashboardLayout() {
   const {
@@ -21,12 +22,83 @@ export function DashboardLayout() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Get userId from localStorage
+  const getUserId = () => {
+    const userDataStr = localStorage.getItem('lifeflow-user');
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        return userData.userId;
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+    return null;
+  };
+
+  const userId = getUserId();
+  const { openTabs, openTab, closeTab } = useOpenTabs(userId);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[DashboardLayout] userId:', userId);
+    console.log('[DashboardLayout] openTabs:', openTabs);
+  }, [userId, openTabs]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
   const currentPage = pages.find((p) => p.id === currentPageId);
+
+  // Auto-open tab when a page is selected
+  useEffect(() => {
+    console.log('[DashboardLayout] Auto-open effect triggered:', {
+      currentPageId,
+      hasCurrentPage: !!currentPage,
+      pageTitle: currentPage?.title,
+      userId,
+    });
+    
+    if (currentPage && userId) {
+      console.log('[DashboardLayout] Calling openTab for:', currentPage.title);
+      openTab(currentPage);
+    }
+  }, [currentPageId, currentPage, userId, openTab]);
+
+  // Handle tab selection
+  const handleSelectTab = (tabId: string) => {
+    const tab = openTabs.find(t => t.id === tabId);
+    if (tab) {
+      setCurrentPageId(tab.pageId);
+      navigate(`/dashboard?pageId=${tab.pageId}`);
+    }
+  };
+
+  // Handle tab close
+  const handleCloseTab = async (tabId: string) => {
+    const tab = openTabs.find(t => t.id === tabId);
+    const success = await closeTab(tabId);
+    
+    if (success && tab) {
+      // If closing the current tab, switch to another tab
+      if (tab.pageId === currentPageId) {
+        const remainingTabs = openTabs.filter(t => t.id !== tabId);
+        if (remainingTabs.length > 0) {
+          // Switch to the previous tab or the first available tab
+          const currentIndex = openTabs.findIndex(t => t.id === tabId);
+          const nextTab = remainingTabs[Math.max(0, currentIndex - 1)];
+          setCurrentPageId(nextTab.pageId);
+          navigate(`/dashboard?pageId=${nextTab.pageId}`);
+        } else {
+          // No tabs left, go to dashboard home
+          navigate('/dashboard');
+        }
+      }
+    }
+  };
 
   return (
     <div className="flex h-screen bg-white dark:bg-[#191919]">
@@ -64,6 +136,12 @@ export function DashboardLayout() {
           }
           onShareToCommunity={() => setIsShareModalOpen(true)}
           showShareButton={!!currentPageId}
+          openTabs={openTabs.map(tab => ({
+            id: tab.id,
+            page: tab.page,
+          }))}
+          onSelectTab={handleSelectTab}
+          onCloseTab={handleCloseTab}
         />
         
         {/* Page Transition with Smooth Fade & Slide */}

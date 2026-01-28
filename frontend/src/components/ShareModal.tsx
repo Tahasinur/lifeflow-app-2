@@ -136,7 +136,8 @@ export function ShareModal({ isOpen, onClose, onSuccess, preSelectedPageId }: Sh
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'X-User-Id': String(user.id)
+          'X-User-Id': String(user.id),
+          'Authorization': `Bearer ${localStorage.getItem('lifeflow-token')}`
         },
         body: JSON.stringify({
           title,
