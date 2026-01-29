@@ -90,7 +90,7 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  sender: ChatUser;
+  sender: ChatUser | null;
   content: string;
   attachments?: Attachment[];
   createdAt: string;

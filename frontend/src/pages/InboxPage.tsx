@@ -500,14 +500,15 @@ function MessageBubble({ message, onDelete }: MessageBubbleProps) {
 
   return (
     <div className="group flex gap-3">
+        {/* Avatar */}
       <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
-        {message.sender.name.charAt(0).toUpperCase()}
+        {message.sender?.name ? message.sender.name.charAt(0).toUpperCase() : '?'}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-semibold text-sm text-[#37352F] dark:text-[#E3E3E3]">
-            {message.sender.name}
+            {message.sender?.name || 'Unknown User'}
           </span>
           <span className="text-xs text-gray-500">
             {new Date(message.createdAt).toLocaleTimeString()}

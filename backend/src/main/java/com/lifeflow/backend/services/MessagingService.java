@@ -33,6 +33,9 @@ public class MessagingService {
     @Autowired
     private MessageReactionRepository reactionRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // CONVERSATION OPERATIONS
 
     public List<ConversationDTO> getConversations(String userId) {
@@ -45,7 +48,7 @@ public class MessagingService {
     public List<ConversationPreviewDTO> getConversationPreviews(String userId) {
         List<Conversation> conversations = conversationRepository.findByUserId(userId);
         return conversations.stream()
-                .map(this::convertToPreviewDTO)
+                .map(c -> convertToPreviewDTO(c, userId))
                 .collect(Collectors.toList());
     }
 
@@ -339,11 +342,32 @@ public class MessagingService {
         return dto;
     }
 
-    private ConversationPreviewDTO convertToPreviewDTO(Conversation conversation) {
+    private ConversationPreviewDTO convertToPreviewDTO(Conversation conversation, String currentUserId) {
         ConversationPreviewDTO dto = new ConversationPreviewDTO();
         dto.setId(conversation.getId());
-        dto.setName(conversation.getName() != null ? conversation.getName() : "Direct Message");
-        dto.setAvatar(conversation.getAvatar());
+
+        // Resolve conversation name
+        if ("direct".equals(conversation.getType())) {
+            // Find the other participant
+            String partnerId = conversation.getParticipants().stream()
+                    .map(ConversationParticipant::getUserId)
+                    .filter(id -> !id.equals(currentUserId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (partnerId != null) {
+                userRepository.findById(partnerId).ifPresent(user -> {
+                    dto.setName(user.getName());
+                    dto.setAvatar(user.getAvatar());
+                });
+            } else {
+                dto.setName("Direct Message");
+            }
+        } else {
+            dto.setName(conversation.getName() != null ? conversation.getName() : "Group Chat");
+            dto.setAvatar(conversation.getAvatar());
+        }
+
         dto.setParticipantCount(conversation.getParticipants().size());
         dto.setIsPinned(false);
         dto.setUnreadCount(0);
@@ -354,7 +378,13 @@ public class MessagingService {
                     .orElse(null);
             if (lastMsg != null) {
                 dto.setLastMessage(lastMsg.getContent());
-                dto.setLastMessageAuthor(lastMsg.getSenderId());
+
+                // Resolve last message author name
+                String authorName = userRepository.findById(lastMsg.getSenderId())
+                        .map(User::getName)
+                        .orElse("Unknown");
+                dto.setLastMessageAuthor(authorName);
+
                 dto.setLastMessageTime(lastMsg.getCreatedAt().toString());
             }
         }
@@ -367,6 +397,7 @@ public class MessagingService {
         dto.setId(message.getId());
         dto.setConversationId(message.getConversation().getId());
         dto.setSenderId(message.getSenderId());
+        dto.setSender(convertToChatUserDTO(message.getSenderId()));
         dto.setContent(message.getContent());
         dto.setCreatedAt(message.getCreatedAt());
         dto.setUpdatedAt(message.getUpdatedAt());
@@ -406,10 +437,22 @@ public class MessagingService {
     }
 
     private ChatUserDTO convertToChatUserDTO(String userId) {
-        // In a real implementation, fetch user from User repository
-        ChatUserDTO dto = new ChatUserDTO();
-        dto.setId(userId);
-        dto.setStatus("online");
-        return dto;
+        return userRepository.findById(userId)
+                .map(user -> {
+                    ChatUserDTO dto = new ChatUserDTO();
+                    dto.setId(user.getId());
+                    dto.setName(user.getName());
+                    dto.setEmail(user.getEmail());
+                    dto.setAvatar(user.getAvatar());
+                    dto.setStatus("online");
+                    return dto;
+                })
+                .orElseGet(() -> {
+                    ChatUserDTO dto = new ChatUserDTO();
+                    dto.setId(userId);
+                    dto.setName("Unknown User");
+                    dto.setStatus("offline");
+                    return dto;
+                });
     }
 }

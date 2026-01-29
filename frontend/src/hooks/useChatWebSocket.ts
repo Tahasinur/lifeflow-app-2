@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Client, IMessage } from '@stomp/stompjs';
 import { Message } from '../types';
@@ -61,7 +61,7 @@ export function useChatWebSocket(): ChatWebSocketHook {
     };
   }, []);
 
-  const sendMessage = (conversationId: string, content: string) => {
+  const sendMessage = useCallback((conversationId: string, content: string) => {
     if (!clientRef.current || !isConnected) {
       console.error('WebSocket not connected');
       return;
@@ -71,9 +71,9 @@ export function useChatWebSocket(): ChatWebSocketHook {
       destination: `/app/chat/send/${conversationId}`,
       body: JSON.stringify({ content }),
     });
-  };
+  }, [isConnected]);
 
-  const subscribeToConversation = (
+  const subscribeToConversation = useCallback((
     conversationId: string,
     callback: (message: Message) => void
   ): (() => void) => {
@@ -108,7 +108,7 @@ export function useChatWebSocket(): ChatWebSocketHook {
       subscription.unsubscribe();
       subscriptionsRef.current.delete(conversationId);
     };
-  };
+  }, [isConnected]);
 
   return {
     isConnected,
